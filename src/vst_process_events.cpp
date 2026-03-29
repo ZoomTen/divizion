@@ -37,17 +37,17 @@ int32_t processEvents(Vst::VstEvents *e)
       if (note > 0)
       {
         logV("sending note on");
-        engine.autoNoteOn(status & 0xf, 0, note-12,velocity);
+        engine.noteOn(status & 0xf, 0, note-12,velocity);
       }
       else
       {
         logV("sending note off");
-        engine.autoNoteOff(status & 0xf, note-12,velocity);
+        engine.noteOff(status & 0xf);
       }
       break;
     case 0x80:
       logV("sending note off");
-      engine.autoNoteOff(status & 0xf, note-12,velocity);
+      engine.noteOff(status & 0xf);
       break;
     }
   }
