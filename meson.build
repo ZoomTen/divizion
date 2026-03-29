@@ -90,6 +90,13 @@ if host_machine.system() == 'windows'
   endif
 endif
 
+# More SDL stuff
+ldflags += '-lsetupapi'
+ldflags += '-limm32'
+ldflags += '-lcfgmgr32'
+ldflags += '-lversion'
+ldflags += '-Wl,--strip-all'
+
 ## build
 shared_module('Divizion',
   src,
