@@ -1,0 +1,6 @@
+[wrap-git]
+url  = https://github.com/tildearrow/furnace.git
+revision = v0.6.8.3
+depth = 1
+clone-recursive = true
+patch_directory = furnace
