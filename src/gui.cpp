@@ -162,6 +162,7 @@ void Gui::RenderGui()
                   |ImGuiWindowFlags_NoResize
                   |ImGuiWindowFlags_NoMove
   );
+
   if (ImGui::BeginMenuBar())
   {
     if (ImGui::BeginMenu("File"))
@@ -172,11 +173,44 @@ void Gui::RenderGui()
       ImGui::EndMenu();
     }
     if (ImGui::MenuItem("Edit", NULL, false, false)){}
-    if (ImGui::MenuItem("About", NULL, false, false)){}
+    if (ImGui::MenuItem("About")){ this->showAbout = true; }
     ImGui::EndMenuBar();
   }
+
   ImGui::BeginChild("Contents", ImVec2(0, 0), true);
+
+  if (ImGui::BeginTabBar("MainTabBar", ImGuiTabBarFlags_FittingPolicyScroll|ImGuiTabBarFlags_TabListPopupButton))
+  {
+    if (ImGui::BeginTabItem("Square 1"))
+    {
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Square 2"))
+    {
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Wave"))
+    {
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Noise"))
+    {
+      ImGui::EndTabItem();
+    }
+    ImGui::EndTabBar();
+  }
+
   ImGui::EndChild();
+
+  if (this->showAbout) {
+    // Pass the pointer to the boolean so the 'X' button can close it
+    if (ImGui::Begin("Divizion", &this->showAbout, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Divizion 0.0.1");
+        ImGui::Text("powered by Furnace 0.6.8.3");
+    }
+    ImGui::End();
+  }
+
   ImGui::End();
 }
 

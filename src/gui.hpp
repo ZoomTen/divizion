@@ -30,4 +30,7 @@ struct Gui
   HWND myWindow{nullptr};
 
   ImGuiContext *ctx{nullptr};
+
+  // GUI stuff
+  bool showAbout{false};
 };
