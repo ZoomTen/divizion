@@ -23,6 +23,7 @@ dispatcher(Vst::AEffect *effect, Vst::VstOpcodeToPlugin opcode, int32_t index, i
     result = processEvents((Vst::VstEvents *)ptr);
     break;
   case Vst::effEditOpen:
+    gui = new Gui(effect);
     if (gui != nullptr)
       gui->open(ptr);
     break;
@@ -34,6 +35,9 @@ dispatcher(Vst::AEffect *effect, Vst::VstOpcodeToPlugin opcode, int32_t index, i
     if (gui != nullptr)
       gui->idle();
     break;
+  case Vst::effEditClose:
+    if (gui != nullptr)
+      delete gui;
   case Vst::effGetVstVersion:
     result = (uint32_t)Vst::kVstVersion;
     break;

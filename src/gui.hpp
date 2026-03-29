@@ -4,6 +4,7 @@
 #include "SDL_events.h"
 #include "SDL_render.h"
 #include "SDL_video.h"
+#include <windef.h>
 
 struct Gui
 {
@@ -23,4 +24,7 @@ struct Gui
   SDL_Event event{};
   SDL_Window *window{nullptr};
   SDL_Renderer *renderer{nullptr};
+
+  // Windows stuff
+  HWND myWindow{nullptr};
 };

@@ -2,14 +2,15 @@
 #include "SDL.h"
 #include "SDL_error.h"
 #include "SDL_events.h"
-#include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_render.h"
 #include "SDL_video.h"
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
+#include "src/ta-log.h"
 #include "src/vst.hpp"
+#include <windef.h>
+#include <windows.h>
 
 Gui::Gui(Vst::AEffect *e)
 {
@@ -18,6 +19,8 @@ Gui::Gui(Vst::AEffect *e)
 
 Gui::~Gui()
 {
+  if (!this->init) return;
+  
   ImGui_ImplSDLRenderer2_Shutdown();
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
@@ -40,30 +43,41 @@ bool Gui::getRect(Vst::ERect **r)
 
 bool Gui::open(void *p)
 {
+  RECT r;
+  HWND parent = (HWND)p;
   this->init = false;
+  GetClientRect(parent, &r);
 
-  if (SDL_VideoInit(nullptr))
+  if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS) < 0)
   {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-      "init video error: %s\n", SDL_GetError());
+    logE("sdl init error: %s", SDL_GetError());
     return this->init;
   }
 
-  // window provided by VST host
-  this->window = SDL_CreateWindowFrom(p);
+  logV("win size: %d x %d", r.right-r.left,r.bottom-r.top);
+  this->myWindow = CreateWindowExA(0,
+    "STATIC", "", WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|WS_CLIPCHILDREN|SS_NOTIFY,
+    0, 0, windowSize.Width(), windowSize.Height(),
+    parent, nullptr, nullptr, nullptr);
+  
+  if (this->myWindow == nullptr)
+  {
+    logE("init own window error");
+    return this->init;
+  }
+
+  // window provided by  host
+  this->window = SDL_CreateWindowFrom(this->myWindow);
   if (!this->window)
   {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-      "open window error: %s\n", SDL_GetError());
+    logE("open window error: %s", SDL_GetError());
     return this->init;
   }
 
-  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-  this->renderer = SDL_CreateRenderer(this->window, -1, 0);
+  this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_SOFTWARE);
   if (!this->renderer)
   {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-      "load renderer error: %s\n", SDL_GetError());
+    logE("load renderer error: %s", SDL_GetError());
     return this->init;
   }
 
@@ -73,6 +87,7 @@ bool Gui::open(void *p)
   ImGui::GetIO().IniFilename = nullptr; // disable layout saving
 
   this->init = true;
+  logV("GUI inited");
   return this->init;
 }
 
@@ -80,6 +95,12 @@ void Gui::idle()
 {
   if (!this->init) return;
 
+  MSG msg;
+  while (PeekMessage(&msg, this->myWindow, 0, 0, PM_REMOVE)) {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+  }
+  
   while (SDL_PollEvent(&this->event))
     ImGui_ImplSDL2_ProcessEvent(&this->event);
 
@@ -114,17 +135,22 @@ void Gui::RenderGui()
                   ImGuiWindowFlags_NoTitleBar
                   |ImGuiWindowFlags_MenuBar
                   |ImGuiWindowFlags_NoResize
+                  |ImGuiWindowFlags_NoMove
   );
-  if (ImGui::BeginMenuBar()) {
-      if (ImGui::MenuItem("File", NULL, false, false)){}
-      if (ImGui::MenuItem("Edit", NULL, false, false)){}
-      if (ImGui::MenuItem("About", NULL, false, false)){}
-      ImGui::EndMenuBar();
+  if (ImGui::BeginMenuBar())
+  {
+    if (ImGui::BeginMenu("File"))
+    {
+      if (ImGui::MenuItem("New", "Ctrl+N")) { 
+          /* Handle New */ 
+      }
+      ImGui::EndMenu();
+    }
+    if (ImGui::MenuItem("Edit", NULL, false, false)){}
+    if (ImGui::MenuItem("About", NULL, false, false)){}
+    ImGui::EndMenuBar();
   }
-  { // Main contents
-      ImGui::BeginChild("Contents", ImVec2(0, 0));
-      ImGui::EndChild();
-  }
-  // ImGui::ShowDemoWindow();
+  ImGui::BeginChild("Contents", ImVec2(0, 0), true);
+  ImGui::EndChild();
   ImGui::End();
 }
