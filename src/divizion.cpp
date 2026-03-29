@@ -2,6 +2,7 @@
 #include "src/gui.hpp"
 #include "src/ta-log.h"
 #include "vst.hpp"
+#include <cstdio>
 #include <cstdlib>
 
 extern void processReplacing(Vst::AEffect *effect, float **inputs, float **outputs, int32_t sampleFrames);
@@ -12,14 +13,16 @@ extern intptr_t dispatcher(Vst::AEffect *effect, Vst::VstOpcodeToPlugin opcode, 
 Gui *gui = nullptr;
 DivEngine engine;
 
+FILE *logger;
+
 // i can't C yet i must C++
 extern "C"
 {
   Vst::AEffect *VSTPluginMain(Vst::AudioMasterCallbackFunc masterCb)
   {
     Vst::AEffect *e = (Vst::AEffect*)(calloc(1, sizeof(Vst::AEffect)));
-    gui = new Gui(e);
-    initLog(stdout);
+    logger = fopen("C:\\Divizion.log", "w");
+    initLog(logger);
     if (!engine.prePreInit())
     {
       logE("engine stage -2 init failed");
