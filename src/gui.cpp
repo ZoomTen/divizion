@@ -12,6 +12,15 @@
 #include <windef.h>
 #include <windows.h>
 
+struct EventManager {
+  static std::map<uint32_t, Gui*> instances; // Map WindowID -> Gui Instance
+  static void Register(uint32_t id, Gui* g);
+  static void Unregister(uint32_t id);
+  static void PollAll();
+};
+
+std::map<uint32_t, Gui*> EventManager::instances;
+
 Gui::Gui(Vst::AEffect *e)
 {
   this->effect=e;
@@ -20,14 +29,25 @@ Gui::Gui(Vst::AEffect *e)
 Gui::~Gui()
 {
   if (!this->init) return;
-  
+
+  uint32_t id = SDL_GetWindowID(this->window);
+  EventManager::Unregister(id);
+
+  ImGui::SetCurrentContext(this->ctx);
   ImGui_ImplSDLRenderer2_Shutdown();
   ImGui_ImplSDL2_Shutdown();
-  ImGui::DestroyContext();
+  ImGui::DestroyContext(this->ctx);
+  this->ctx = nullptr;
 
   SDL_DestroyRenderer(this->renderer);
   SDL_DestroyWindow(this->window);
-  SDL_Quit();
+
+  if (this->myWindow)
+  {
+    DestroyWindow(this->myWindow);
+    this->myWindow = nullptr;
+  }
+  this->init = false;
 }
 
 Vst::ERect windowSize = {
@@ -73,6 +93,7 @@ bool Gui::open(void *p)
     logE("open window error: %s", SDL_GetError());
     return this->init;
   }
+  EventManager::Register(SDL_GetWindowID(this->window), this);
 
   this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_SOFTWARE);
   if (!this->renderer)
@@ -81,7 +102,8 @@ bool Gui::open(void *p)
     return this->init;
   }
 
-  ImGui::CreateContext();
+  this->ctx = ImGui::CreateContext();
+  ImGui::SetCurrentContext(this->ctx);
   ImGui_ImplSDL2_InitForSDLRenderer(this->window, this->renderer);
   ImGui_ImplSDLRenderer2_Init(this->renderer);
   ImGui::GetIO().IniFilename = nullptr; // disable layout saving
@@ -94,15 +116,11 @@ bool Gui::open(void *p)
 void Gui::idle()
 {
   if (!this->init) return;
+  if (!this->ctx) return;
 
-  MSG msg;
-  while (PeekMessage(&msg, this->myWindow, 0, 0, PM_REMOVE)) {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-  }
-  
-  while (SDL_PollEvent(&this->event))
-    ImGui_ImplSDL2_ProcessEvent(&this->event);
+  EventManager::PollAll();
+
+  ImGui::SetCurrentContext(this->ctx);
 
   // setup platform
   ImGui_ImplSDLRenderer2_NewFrame();
@@ -124,8 +142,15 @@ void Gui::idle()
   SDL_RenderPresent(renderer);
 }
 
+void Gui::HandleEvent(SDL_Event* ev) {
+    ImGui::SetCurrentContext(this->ctx);
+    ImGui_ImplSDL2_ProcessEvent(ev);
+}
+
 void Gui::RenderGui()
 {
+  ImGui::SetCurrentContext(this->ctx);
+
   // make it "full screen"
   auto io = ImGui::GetIO();
   ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
@@ -153,4 +178,18 @@ void Gui::RenderGui()
   ImGui::BeginChild("Contents", ImVec2(0, 0), true);
   ImGui::EndChild();
   ImGui::End();
+}
+
+
+void EventManager::Register(uint32_t id, Gui* g) { instances[id] = g; }
+void EventManager::Unregister(uint32_t id) { instances.erase(id); }
+void EventManager::PollAll() {
+  SDL_Event ev;
+  while (SDL_PollEvent(&ev)) {
+    uint32_t id = 0;
+    if (ev.type >= SDL_WINDOWEVENT && ev.type <= SDL_SYSWMEVENT) id = ev.window.windowID;
+    if (ev.type >= SDL_KEYDOWN && ev.type <= SDL_KEYUP) id = ev.key.windowID;
+    if (ev.type >= SDL_MOUSEMOTION && ev.type <= SDL_MOUSEWHEEL) id = ev.button.windowID;
+    if (instances.count(id)) {
+      instances[id]->HandleEvent(&ev);}}
 }

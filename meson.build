@@ -58,6 +58,8 @@ src = files(
   'src/vst_dispatch.cpp',
   'src/vst_params.cpp',
   'src/vst_process_events.cpp',
+  'src/vst_io.cpp',
+  'src/divizion_state.cpp',
   'src/gui.cpp')
 
 ## windows def file

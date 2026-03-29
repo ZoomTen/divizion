@@ -1,5 +1,6 @@
 #pragma once
 
+#include "imgui.h"
 #include "vst.hpp"
 #include "SDL_events.h"
 #include "SDL_render.h"
@@ -21,10 +22,12 @@ struct Gui
   Vst::AEffect *effect;
 
   // SDL stuff
-  SDL_Event event{};
   SDL_Window *window{nullptr};
   SDL_Renderer *renderer{nullptr};
+  void HandleEvent(SDL_Event* ev);
 
   // Windows stuff
   HWND myWindow{nullptr};
+
+  ImGuiContext *ctx{nullptr};
 };
