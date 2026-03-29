@@ -21,11 +21,12 @@ extern "C"
   {
     Vst::AEffect *e = (Vst::AEffect*)(calloc(1, sizeof(Vst::AEffect)));
 
-    if (!logger)
-    {
-      logger = fopen("C:\\Divizion.log", "w");
-      initLog(logger);
-    }
+    // if (!logger)
+    // {
+    //   logger = fopen("C:\\Divizion.log", "w");
+    //   initLog(logger);
+    // }
+    initLog(stdout);
     
     DivEngine *engine = newEngine(); // requires log to be init first
     DivizionInstance *di = new DivizionInstance(engine);

@@ -67,11 +67,11 @@ bool Gui::open(void *p)
   HWND parent = (HWND)p;
   this->init = false;
   GetClientRect(parent, &r);
-
+  
   if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS) < 0)
   {
     logE("sdl init error: %s", SDL_GetError());
-    return this->init;
+    goto end;
   }
 
   logV("win size: %d x %d", r.right-r.left,r.bottom-r.top);
@@ -83,7 +83,7 @@ bool Gui::open(void *p)
   if (this->myWindow == nullptr)
   {
     logE("init own window error");
-    return this->init;
+    goto end;
   }
 
   // window provided by  host
@@ -91,7 +91,7 @@ bool Gui::open(void *p)
   if (!this->window)
   {
     logE("open window error: %s", SDL_GetError());
-    return this->init;
+    goto end;
   }
   EventManager::Register(SDL_GetWindowID(this->window), this);
 
@@ -99,17 +99,19 @@ bool Gui::open(void *p)
   if (!this->renderer)
   {
     logE("load renderer error: %s", SDL_GetError());
-    return this->init;
+    goto end;
   }
 
   this->ctx = ImGui::CreateContext();
   ImGui::SetCurrentContext(this->ctx);
-  ImGui_ImplSDL2_InitForSDLRenderer(this->window, this->renderer);
-  ImGui_ImplSDLRenderer2_Init(this->renderer);
+  if (!ImGui_ImplSDL2_InitForSDLRenderer(this->window, this->renderer)) goto end;
+  if (!ImGui_ImplSDLRenderer2_Init(this->renderer)) goto end;
   ImGui::GetIO().IniFilename = nullptr; // disable layout saving
 
   this->init = true;
   logV("GUI inited");
+
+end:
   return this->init;
 }
 
@@ -117,10 +119,9 @@ void Gui::idle()
 {
   if (!this->init) return;
   if (!this->ctx) return;
-
   EventManager::PollAll();
-
   ImGui::SetCurrentContext(this->ctx);
+  if (ImGui::GetIO().BackendRendererUserData == nullptr) return;
 
   // setup platform
   ImGui_ImplSDLRenderer2_NewFrame();
@@ -139,7 +140,7 @@ void Gui::idle()
 
   // to SDL backbuffer
   ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
-  SDL_RenderPresent(renderer);
+  SDL_RenderPresent(this->renderer);
 }
 
 void Gui::HandleEvent(SDL_Event* ev) {
@@ -149,8 +150,6 @@ void Gui::HandleEvent(SDL_Event* ev) {
 
 void Gui::RenderGui()
 {
-  ImGui::SetCurrentContext(this->ctx);
-
   // make it "full screen"
   auto io = ImGui::GetIO();
   ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
@@ -217,13 +216,14 @@ void Gui::RenderGui()
 
 void EventManager::Register(uint32_t id, Gui* g) { instances[id] = g; }
 void EventManager::Unregister(uint32_t id) { instances.erase(id); }
-void EventManager::PollAll() {
+void EventManager::PollAll()
+{
   SDL_Event ev;
   while (SDL_PollEvent(&ev)) {
     uint32_t id = 0;
     if (ev.type >= SDL_WINDOWEVENT && ev.type <= SDL_SYSWMEVENT) id = ev.window.windowID;
     if (ev.type >= SDL_KEYDOWN && ev.type <= SDL_KEYUP) id = ev.key.windowID;
     if (ev.type >= SDL_MOUSEMOTION && ev.type <= SDL_MOUSEWHEEL) id = ev.button.windowID;
-    if (instances.count(id)) {
+    if (id != 0 && instances.count(id)) {
       instances[id]->HandleEvent(&ev);}}
 }
