@@ -49,8 +49,7 @@ extern "C"
     {
       logI("init OK");
     }
-    engine.createNewFromDefaults();
-    logI("createNewFromDefaults");
+    engine.createNew("id0=4", "Game Boy", false);
     e->magic = Vst::kEffectMagic;
     e->dispatcher = dispatcher;
     e->numPrograms = 0;
