@@ -20,8 +20,7 @@ imgui_lib = static_library('imgui',
 
 imgui_dep = declare_dependency(
   link_with           : imgui_lib,
-  include_directories : imgui_inc,
-  dependencies        : sdl2_dep
+  include_directories : imgui_inc
 )
 
 meson.override_dependency('imgui_patched', imgui_dep)
