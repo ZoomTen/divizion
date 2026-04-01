@@ -1,4 +1,5 @@
 project ('Divizion', 'cpp',
+  version: '0.0.1',
   default_options: ['cpp_std=c++14'],
   meson_version: '>=0.56')
 
@@ -43,18 +44,27 @@ furnace_proj = cmake.subproject('furnace', options: furnace_opts)
 furnace_dep = furnace_proj.dependency('furnace')
 
 ## source files
-src = files(
-  'src/divizion.cpp',
-  'src/vst_output.cpp',
-  'src/vst_dispatch.cpp',
-  'src/vst_params.cpp',
-  'src/vst_process_events.cpp',
-  'src/vst_io.cpp',
-  'src/divizion_state.cpp',
-  'src/gui.cpp')
+
+divizion_src = files(
+
+)
+
+gui_src = files(
+  'src/gui.cpp'
+)
+
+mock_src = files(
+  'src/mock/mock.cpp'
+)
+
+src = [divizion_src, gui_src, mock_src]
+
+if get_option('standalone')
+  src += 'src/standalone/main.cpp'
+endif
 
 ## windows def file
-def = 'src/divizion.def'
+# def = 'src/divizion.def'
 
 ## includes
 inc = []
@@ -89,15 +99,25 @@ if host_machine.system() == 'windows'
   ldflags += '-lversion'
 endif
 
-ldflags += '-Wl,--strip-all'
+# ldflags += '-Wl,--strip-all'
 ldflags += '-Wl,--as-needed'
 
 ## build
-shared_module('Divizion',
-  src,
-  include_directories: inc,
-  dependencies: deps,
-  name_prefix: '',
-  link_args: ldflags,
-  install: false)
+if get_option('vst2')
+  shared_module('Divizion',
+    src,
+    include_directories: inc,
+    dependencies: deps,
+    name_prefix: '',
+    link_args: ldflags,
+    install: false)
+elif get_option('standalone')
+  executable('divizion',
+    src,
+    include_directories: inc,
+    dependencies: deps,
+    name_prefix: '',
+    link_args: ldflags,
+    install: false)
+endif
 

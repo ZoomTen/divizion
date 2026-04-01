@@ -1,4 +1,4 @@
-#include "divizion_state.hpp"
+#include "../divizion_state.hpp"
 #include "src/engine/engine.h"
 #include "src/ta-log.h"
 #include "vst.hpp"
@@ -51,32 +51,19 @@ extern "C"
 DivEngine *newEngine(void)
 {
   DivEngine *e = new DivEngine();
-  if (!e->prePreInit())
-  {
-    logE("engine stage -2 init failed");
-  }
-  else
-  {
-    logI("prepreinit OK");
-  }
+  
+  if (!e->prePreInit()) logE("engine stage -2 init failed");
+  else logI("prepreinit OK");
+
   e->setAudio(DIV_AUDIO_DUMMY);
   e->setView(DIV_STATUS_NOTHING);
-  if (!e->preInit())
-  {
-    logE("engine stage -1 init failed");
-  }
-  else
-  {
-    logI("preinit OK");
-  }
-  if (!e->init())
-  {
-    logE("engine stage 0 init failed");
-  }
-  else
-  {
-    logI("init OK");
-  }
+
+  if (!e->preInit()) logE("engine stage -1 init failed");
+  else logI("preinit OK");
+
+  if (!e->init()) logE("engine stage 0 init failed");
+  else logI("init OK");
+
   e->createNew("id0=4", "Game Boy", false);
   return e;
 }

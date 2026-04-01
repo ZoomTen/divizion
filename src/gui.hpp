@@ -1,36 +1,46 @@
 #pragma once
 
-#include "imgui.h"
-#include "vst.hpp"
-#include "SDL_events.h"
-#include "SDL_render.h"
+/* Main GUI class. */
+
 #include "SDL_video.h"
-#include <windef.h>
+#include "imgui.h"
+#include "src/interface_actions.hpp"
+#include <cstdint>
+#include <unordered_map>
+
+typedef enum {
+  NONE = -1,
+  INST,
+  WAVE,
+  SAMP
+} SelectedAssetType;
+
 
 struct Gui
 {
-  Gui(Vst::AEffect *effect);
+  // methods
+  Gui(SDL_Window *w, DivizionActions *act);
   ~Gui();
+  void RenderGui(void);
 
-  bool open(void *p);
-  bool getRect(Vst::ERect **r);
-  void idle();
+  // intrinsic things
+  ImGuiContext *c{nullptr};
+  SDL_Window *w{nullptr};
+  DivizionActions *act{nullptr};
 
-  void RenderGui();
-  bool init{false};
-
-  Vst::AEffect *effect;
-
-  // SDL stuff
-  SDL_Window *window{nullptr};
-  SDL_Renderer *renderer{nullptr};
-  void HandleEvent(SDL_Event* ev);
-
-  // Windows stuff
-  HWND myWindow{nullptr};
-
-  ImGuiContext *ctx{nullptr};
-
-  // GUI stuff
+  // dialogs
   bool showAbout{false};
+  bool showDebug{false};
+
+  // states
+  SelectedAssetType currentlyViewingType{INST};
+  SelectedAssetType selectedType{NONE};
+  int selectedIndex{-1};
+  int instSelected{-1};
+  int waveSelected{-1};
+  int sampSelected{-1};
+
+  // window tracking
+  uint32_t wid;
+  static std::unordered_map<uint32_t, Gui*> windows;
 };

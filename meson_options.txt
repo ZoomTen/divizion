@@ -1,0 +1,2 @@
+option('vst2', type: 'boolean', value: false, description: 'Build VST2 plugin')
+option('standalone', type: 'boolean', value: true, description: 'Build standalone application')
