@@ -2,6 +2,8 @@
 #include "../gui.hpp"
 #include "imgui.h"
 #include "../mock/mock.hpp"
+#include "src/engine/engine.h"
+#include "src/ta-log.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_events.h>
@@ -11,12 +13,20 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 
+static DivEngine *newEngine(void);
+static int loadFile(DivEngine *e, String path);
+
 int main(void)
 {
 	SDL_Window *w = nullptr;
 	SDL_Event e;
 	bool run = false;
 	Mock m = Mock();
+
+  initLog(stdout);
+	DivEngine *de = newEngine();
+	int lf = loadFile(de, "cerulean.fur");
+	if (lf) {finishLogFile(); return lf;}
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -91,4 +101,86 @@ int main(void)
 	SDL_DestroyWindow(w);
 	SDL_Quit();
 	return 0;
+}
+
+
+DivEngine *newEngine(void)
+{
+  DivEngine *e = new DivEngine();
+  
+  if (!e->prePreInit()) logE("engine stage -2 init failed");
+  else logI("prepreinit OK");
+
+  e->setAudio(DIV_AUDIO_DUMMY);
+  e->setView(DIV_STATUS_NOTHING);
+
+  if (!e->preInit()) logE("engine stage -1 init failed");
+  else logI("preinit OK");
+
+  if (!e->init()) logE("engine stage 0 init failed");
+  else logI("init OK");
+
+  // e->createNew("id0=4", "Game Boy", false);
+  return e;
+}
+
+// required for DivEngine
+void reportError(String what)
+{
+  logE("%s",what);
+}
+
+int loadFile(DivEngine *e, String path) {
+  if (!path.empty()) {
+    logI("loading module...");
+    FILE* f=fopen(path.c_str(),"rb");
+    if (f==NULL) {
+      perror("error");
+      return 1;
+    }
+    if (fseek(f,0,SEEK_END)<0) {
+      perror("size error");
+      fmt::sprintf(_("on seek: %s"),strerror(errno));
+      fclose(f);
+      return 1;
+    }
+    ssize_t len=ftell(f);
+    if (len==(SIZE_MAX>>1)) {
+      perror("could not get file length");
+      fmt::sprintf(_("on pre tell: %s"),strerror(errno));
+      fclose(f);
+      return 1;
+    }
+    if (len<1) {
+      if (len==0) {
+        logE("that file is empty!");
+      } else {
+        perror("tell error");
+        fmt::sprintf(_("on tell: %s"),strerror(errno));
+      }
+      fclose(f);
+      return 1;
+    }
+    if (fseek(f,0,SEEK_SET)<0) {
+      perror("size error");
+      fmt::sprintf(_("on get size: %s"),strerror(errno));
+      fclose(f);
+      return 1;
+    }
+    unsigned char* file=new unsigned char[len];
+    if (fread(file,1,(size_t)len,f)!=(size_t)len) {
+      perror("read error");
+      fmt::sprintf(_("on read: %s"),strerror(errno));
+      fclose(f);
+      delete[] file;
+      return 1;
+    }
+    fclose(f);
+    if (!e->load(file,(size_t)len,path.c_str())) {
+      e->getLastError();
+      logE("could not open file!");
+      return 1;
+    }
+  }
+  return 0;
 }
