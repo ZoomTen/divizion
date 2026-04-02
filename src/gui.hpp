@@ -8,29 +8,30 @@
 #include <cstdint>
 #include <unordered_map>
 
-struct Gui
-{
+struct Gui {
   // methods
-  Gui(SDL_Window *w, DivizionActions *act);
+  Gui(SDL_Window* w, DivizionActions* act);
   ~Gui();
   void RenderGui(void);
 
   // intrinsic things
-  ImGuiContext *c{nullptr};
-  SDL_Window *w{nullptr};
-  DivizionActions *act{nullptr};
+  ImGuiContext* c{ nullptr };
+  SDL_Window* w{ nullptr };
+  DivizionActions* act{ nullptr };
 
   // dialogs
-  bool showAbout{false};
-  bool showDebug{false};
+  bool showAbout{ false };
+  bool showDebug{ false };
 
   // states
-  ActiveItemType currentlyViewingType{INSTRUMENT};
-  ActiveItemType selectedType{NONE};
-  int selectedIndex{-1};
-  int instSelected{-1};
-  int waveSelected{-1};
-  int sampSelected{-1};
+  ActiveItemType currentlyViewingType{ INSTRUMENT };
+  ActiveItemType selectedType{ NONE };
+  int selectedIndex{ -1 };
+  int instSelected{ -1 };
+  int waveSelected{ -1 };
+  int sampSelected{ -1 };
+  int lastAssetType{ NONE };
+  bool channelsOpen{ false };
 
   // window tracking
   uint32_t wid;

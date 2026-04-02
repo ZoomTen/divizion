@@ -11,16 +11,9 @@
 
 using std::vector;
 
-typedef enum
-{
-  NONE = -1,
-  INSTRUMENT,
-  WAVETABLE,
-  SAMPLE
-} ActiveItemType;
+typedef enum { NONE = -1, INSTRUMENT, WAVETABLE, SAMPLE } ActiveItemType;
 
-struct DivizionActions
-{
+struct DivizionActions {
   // ImGui commands to draw the editor for the specified instrument.
   // This will be an entire panel's worth.
   virtual void drawInstrumentInfo(ActiveItemType type, int index) = 0;
@@ -46,9 +39,11 @@ struct DivizionActions
   // What to do when clicking the Delete button
   virtual void actDelete(ActiveItemType type, int index) = 0;
 
-  virtual vector<DivInstrument*>  getInstrumentList() = 0;
+  virtual vector<DivInstrument*> getInstrumentList() = 0;
   virtual vector<DivWavetable*> getWavetables() = 0;
   virtual vector<DivSample*> getSamples() = 0;
+
+  virtual void drawChannelInfo() = 0;
 
   virtual ~DivizionActions() = default;
 };

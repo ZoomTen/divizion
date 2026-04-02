@@ -4,8 +4,6 @@
 
 #include "src/engine/engine.h"
 
-struct Divizion
-{
-  DivEngine *e;
-
+struct Divizion {
+  DivEngine* e;
 };

@@ -1,6 +1,5 @@
 #include "gui.hpp"
 #include "IconsFontAwesome4.h"
-#include "gui.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui_sw.hpp"
@@ -12,20 +11,18 @@
 #include <cstdio>
 #include <unordered_map>
 
-std::unordered_map<uint32_t, Gui *> Gui::windows;
+std::unordered_map<uint32_t, Gui*> Gui::windows;
 
-static void drawInsList(Gui *self);
-static void drawAboutWindow(bool *showFlag);
-static void drawInsMgmt(Gui *self);
-static void renderWindow(Gui *self);
+static void drawInsList(Gui* self);
+static void drawAboutWindow(bool* showFlag);
+static void drawInsMgmt(Gui* self);
+static void renderWindow(Gui* self);
 
-extern void renderListItem(Gui *self, size_t index, DivInstrument *item);
-extern void renderListItem(Gui *self, size_t index, DivWavetable *item);
-extern void renderListItem(Gui *self, size_t index, DivSample *item);
+extern void renderListItem(Gui* self, size_t index, DivInstrument* item);
+extern void renderListItem(Gui* self, size_t index, DivWavetable* item);
+extern void renderListItem(Gui* self, size_t index, DivSample* item);
 
-int lastAssetType;
-
-Gui::Gui(SDL_Window *w, DivizionActions *act)
+Gui::Gui(SDL_Window* w, DivizionActions* act)
 {
   this->w = w;
   this->act = act;
@@ -36,23 +33,20 @@ Gui::Gui(SDL_Window *w, DivizionActions *act)
   this->c = ImGui::CreateContext();
   ImGui::SetCurrentContext(this->c);
 
-  if (!ImGui_ImplSW_Init(this->w))
-  {
+  if (!ImGui_ImplSW_Init(this->w)) {
     // try again
-    if (!SDL_GetWindowSurface(this->w))
-    {
+    if (!SDL_GetWindowSurface(this->w)) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "can't init UI surface: %s",
-                  SDL_GetError());
+                   SDL_GetError());
     }
-    if (!ImGui_ImplSW_Init(this->w))
-    {
+    if (!ImGui_ImplSW_Init(this->w)) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "can't init UI backend: %s",
-                  SDL_GetError());
+                   SDL_GetError());
     }
   }
 
-  ImGuiIO &io = ImGui::GetIO();
-  io.DisplaySize = {500, 500};
+  ImGuiIO& io = ImGui::GetIO();
+  io.DisplaySize = { 500, 500 };
   io.Fonts->AddFontDefault();
   ImFontConfig config;
   config.MergeMode = true;
@@ -62,8 +56,7 @@ Gui::Gui(SDL_Window *w, DivizionActions *act)
 
 Gui::~Gui()
 {
-  if (!this->c)
-    return;
+  if (!this->c) return;
 
   windows.erase(this->wid);
   ImGui::SetCurrentContext(this->c);
@@ -88,153 +81,51 @@ void Gui::RenderGui()
   SDL_UpdateWindowSurface(this->w);
 }
 
-bool channelsOpen = false;
-#define MARK_MODIFIED
-const int dpiScale = 1;
-#define _(x) x
-
-void renderWindow(Gui *self)
+void renderWindow(Gui* self)
 {
   ImGui::Begin("Root", NULL,
-               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar |
-                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoBringToFrontOnFocus);
-  if (ImGui::BeginMenuBar())
-  {
-    if (ImGui::BeginMenu("File"))
-    {
-      if (ImGui::MenuItem("Load instruments...")){ /* TODO */ }
-      if (ImGui::MenuItem("Save instruments...")){ /* TODO */ }
+               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar
+                 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+                 | ImGuiWindowFlags_NoBringToFrontOnFocus);
+  if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMenu("File")) {
+      if (ImGui::MenuItem("Load instruments...")) { /* TODO */
+      }
+      if (ImGui::MenuItem("Save instruments...")) { /* TODO */
+      }
       ImGui::EndMenu();
     }
-    if (ImGui::MenuItem("UI Debug"))
-    {
+    if (ImGui::MenuItem("UI Debug")) {
       self->showDebug = true;
     }
-    if (ImGui::MenuItem("About"))
-    {
+    if (ImGui::MenuItem("Panic")) {
+    }
+    if (ImGui::MenuItem("About")) {
       self->showAbout = true;
     }
     ImGui::EndMenuBar();
   }
   ImGui::BeginChild("Contents", ImVec2(0, 0));
-  if (ImGui::BeginTabBar("AssetsTabBar"))
-  {
-    if (ImGui::BeginTabItem("Instrument Management"))
-    {
+  if (ImGui::BeginTabBar("AssetsTabBar")) {
+    if (ImGui::BeginTabItem("Instrument Management")) {
       drawInsMgmt(self);
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Chip Management"))
-    {
-
-
-
-
-
- if (ImGui::Begin("Channels",&channelsOpen,0,_("Channels"))) {
-    if (ImGui::BeginTable("ChannelList",5)) {
-      ImGui::TableSetupColumn("c0",ImGuiTableColumnFlags_WidthFixed,0.0);
-      ImGui::TableSetupColumn("c1",ImGuiTableColumnFlags_WidthFixed,0.0);
-      ImGui::TableSetupColumn("c2",ImGuiTableColumnFlags_WidthFixed,0.0);
-      ImGui::TableSetupColumn("c3",ImGuiTableColumnFlags_WidthStretch,0.0);
-      ImGui::TableSetupColumn("c4",ImGuiTableColumnFlags_WidthFixed,48.0f*dpiScale);
-      ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-      ImGui::TableNextColumn();
-      ImGui::Text(_("Pat"));
-      ImGui::TableNextColumn();
-      ImGui::Text(_("Osc"));
-      ImGui::TableNextColumn();
-      ImGui::Text(_("Swap"));
-      ImGui::TableNextColumn();
-      ImGui::Text(_("Name"));
-      for (int i=0; i<e->getTotalChannelCount(); i++) {
-        ImGui::PushID(i);
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        if (ImGui::Checkbox("##VisiblePat",&self->curSubSong->chanShow[i])) {
-          MARK_MODIFIED;
-        }
-        if (ImGui::IsItemHovered()) {
-          ImGui::SetTooltip(_("Show in pattern"));
-        }
-        ImGui::TableNextColumn();
-        if (ImGui::Checkbox("##VisibleChanOsc",&e->curSubSong->chanShowChanOsc[i])) {
-          MARK_MODIFIED;
-        }
-        if (ImGui::IsItemHovered()) {
-          ImGui::SetTooltip(_("Show in per-channel oscilloscope"));
-        }
-        ImGui::TableNextColumn();
-        if (ImGui::Button(ICON_FA_ARROWS)) {
-        }
-        if (ImGui::BeginDragDropSource()) {
-          chanToMove=i;
-          ImGui::SetDragDropPayload("FUR_CHAN",NULL,0,ImGuiCond_Once);
-          ImGui::Button(ICON_FA_ARROWS "##ChanDrag");
-          ImGui::EndDragDropSource();
-        } else if (ImGui::IsItemHovered()) {
-          ImGui::SetTooltip(_("%s #%d\n(drag to swap channels)"),e->getSystemName(e->sysOfChan[i]),e->dispatchChanOfChan[i]);
-        }
-        if (ImGui::BeginDragDropTarget()) {
-          const ImGuiPayload* dragItem=ImGui::AcceptDragDropPayload("FUR_CHAN");
-          if (dragItem!=NULL) {
-            if (dragItem->IsDataType("FUR_CHAN")) {
-              if (chanToMove!=i && chanToMove>=0) {
-                e->swapChannelsP(chanToMove,i);
-                MARK_MODIFIED;
-              }
-              chanToMove=-1;
-            }
-          }
-          ImGui::EndDragDropTarget();
-        }
-        ImGui::TableNextColumn();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        if (ImGui::InputTextWithHint("##ChanName",e->getChannelName(i),&e->curSubSong->chanName[i])) {
-          MARK_MODIFIED;
-        }
-        ImGui::TableNextColumn();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        if (ImGui::InputTextWithHint("##ChanShortName",e->getChannelShortName(i),&e->curSubSong->chanShortName[i])) {
-          MARK_MODIFIED;
-        }
-        ImGui::PopID();
-      }
-      ImGui::EndTable();
-    }
-  }
-  if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) curWindow=GUI_WINDOW_CHANNELS;
-  ImGui::End();
-
-
-
-
-
-
-
-
-
-
-
-
-
+    if (ImGui::BeginTabItem("Chip Management")) {
+      if (self->act) self->act->drawChannelInfo();
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();
   }
   ImGui::EndChild();
-  if (self->showAbout)
-    drawAboutWindow(&self->showAbout);
-  if (self->showDebug)
-    ImGui::ShowMetricsWindow(&self->showDebug);
+  if (self->showAbout) drawAboutWindow(&self->showAbout);
+  if (self->showDebug) ImGui::ShowMetricsWindow(&self->showDebug);
   ImGui::End();
 }
 
-void drawInsMgmt(Gui *self)
+void drawInsMgmt(Gui* self)
 {
-  if (ImGui::BeginTable("Split", 2, ImGuiTableFlags_Resizable))
-  {
+  if (ImGui::BeginTable("Split", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableSetupColumn("LeftPane", ImGuiTableColumnFlags_WidthStretch,
                             0.25);
     ImGui::TableSetupColumn("RightPane", ImGuiTableColumnFlags_WidthStretch,
@@ -246,19 +137,17 @@ void drawInsMgmt(Gui *self)
     ImGui::TableSetColumnIndex(1);
     ImGui::BeginChild("RightChild");
     if (self->act)
-      self->act->drawInstrumentInfo(self->selectedType,
-                                    self->selectedIndex);
+      self->act->drawInstrumentInfo(self->selectedType, self->selectedIndex);
     ImGui::EndChild();
     ImGui::EndTable();
   }
 }
 
-void drawAboutWindow(bool *showFlag)
+void drawAboutWindow(bool* showFlag)
 {
   if (ImGui::Begin("About", showFlag,
-                   ImGuiWindowFlags_AlwaysAutoResize |
-                       ImGuiWindowFlags_Modal))
-  {
+                   ImGuiWindowFlags_AlwaysAutoResize
+                     | ImGuiWindowFlags_Modal)) {
     ImGui::Text("Divizion 0.0.1");
     ImGui::Text("powered by DivEngine (Furnace) 0.6.8.3");
     ImGui::Separator();
@@ -270,76 +159,57 @@ void drawAboutWindow(bool *showFlag)
   ImGui::End();
 }
 
-void drawInsList(Gui *self)
+void drawInsList(Gui* self)
 {
-
-  if (!ImGui::BeginChild("Assets"))
-    return;
+  if (!ImGui::BeginChild("Assets")) return;
 
   ImVec2 listBox = ImGui::GetContentRegionAvail();
   listBox.y = listBox.y - 28;
 
-  if (!ImGui::BeginChild("FullContainer", listBox))
-    return;
+  if (!ImGui::BeginChild("FullContainer", listBox)) return;
   if (ImGui::BeginTabBar("AssetsTabBar",
-                         ImGuiTabBarFlags_FittingPolicyScroll))
-  {
-    if (ImGui::BeginTabItem("Inst"))
-    {
+                         ImGuiTabBarFlags_FittingPolicyScroll)) {
+    if (ImGui::BeginTabItem("Inst")) {
       self->currentlyViewingType = INSTRUMENT;
-      if (self->act)
-      {
+      if (self->act) {
         ImGui::BeginChild("Instr list");
         auto list = self->act->getInstrumentList();
-        for (size_t i = 0; i < list.size(); i++)
-        {
+        for (size_t i = 0; i < list.size(); i++) {
           ImGui::PushID(i);
           renderListItem(self, i, list[i]);
           ImGui::PopID();
         }
         ImGui::EndChild();
-      }
-      else
-        ImGui::Text("getInstrumentList missing");
+      } else ImGui::Text("getInstrumentList missing");
 
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Wave"))
-    {
+    if (ImGui::BeginTabItem("Wave")) {
       self->currentlyViewingType = WAVETABLE;
-      if (self->act)
-      {
+      if (self->act) {
         ImGui::BeginChild("Instr list");
         auto list = self->act->getWavetables();
-        for (size_t i = 0; i < list.size(); i++)
-        {
+        for (size_t i = 0; i < list.size(); i++) {
           ImGui::PushID(i);
           renderListItem(self, i, list[i]);
           ImGui::PopID();
         }
         ImGui::EndChild();
-      }
-      else
-        ImGui::Text("getWavetables missing");
+      } else ImGui::Text("getWavetables missing");
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Samp"))
-    {
+    if (ImGui::BeginTabItem("Samp")) {
       self->currentlyViewingType = SAMPLE;
-      if (self->act)
-      {
+      if (self->act) {
         ImGui::BeginChild("Instr list");
         auto list = self->act->getSamples();
-        for (size_t i = 0; i < list.size(); i++)
-        {
+        for (size_t i = 0; i < list.size(); i++) {
           ImGui::PushID(i);
           renderListItem(self, i, list[i]);
           ImGui::PopID();
         }
         ImGui::EndChild();
-      }
-      else
-        ImGui::Text("getWavetables missing");
+      } else ImGui::Text("getWavetables missing");
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();
@@ -348,51 +218,44 @@ void drawInsList(Gui *self)
   ImGui::Separator();
   { /* Toolbar */
     int currentlySelectedOfViewingType;
-    switch (self->currentlyViewingType)
-    {
-      case INSTRUMENT:
-        currentlySelectedOfViewingType = self->instSelected;
-        break;
-      case WAVETABLE:
-        currentlySelectedOfViewingType = self->waveSelected;
-        break;
-      case SAMPLE:
-        currentlySelectedOfViewingType = self->sampSelected;
-        break;
-      default:
-        break;
+    switch (self->currentlyViewingType) {
+    case INSTRUMENT:
+      currentlySelectedOfViewingType = self->instSelected;
+      break;
+    case WAVETABLE:
+      currentlySelectedOfViewingType = self->waveSelected;
+      break;
+    case SAMPLE:
+      currentlySelectedOfViewingType = self->sampSelected;
+      break;
+    default:
+      break;
     }
     { /* Button: Add item */
-      if (ImGui::Button(ICON_FA_PLUS "##InsAdd"))
-      {
+      if (ImGui::Button(ICON_FA_PLUS "##InsAdd")) {
         // if (settings.unifiedDataView) {
-        switch (lastAssetType)
-        {
-          case 0:
-            // doAction(GUI_ACTION_INS_LIST_ADD);
-            break;
-          case 1:
-            // doAction(GUI_ACTION_WAVE_LIST_ADD);
-            break;
-          case 2:
-            // doAction(GUI_ACTION_SAMPLE_LIST_ADD);
-            break;
+        switch (self->lastAssetType) {
+        case 0:
+          // doAction(GUI_ACTION_INS_LIST_ADD);
+          break;
+        case 1:
+          // doAction(GUI_ACTION_WAVE_LIST_ADD);
+          break;
+        case 2:
+          // doAction(GUI_ACTION_SAMPLE_LIST_ADD);
+          break;
         }
         // } else {
         // doAction(GUI_ACTION_INS_LIST_ADD);
         // }
       }
-      if (ImGui::IsItemHovered())
-      {
+      if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Add");
       }
-      if (ImGui::IsItemClicked())
-      {
-        if (self->act)
-          self->act->actAdd(self->currentlyViewingType);
+      if (ImGui::IsItemClicked()) {
+        if (self->act) self->act->actAdd(self->currentlyViewingType);
       }
-      if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-      {
+      if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
         // makeInsTypeList=e->getPossibleInsTypes();
         // displayInsTypeList=true;
         // displayInsTypeListMakeInsSample=-1;
@@ -400,65 +263,55 @@ void drawInsList(Gui *self)
     }
     ImGui::SameLine();
     { /* Button: Clone item */
-      if (ImGui::Button(ICON_FA_FILES_O "##InsClone"))
-      {
+      if (ImGui::Button(ICON_FA_FILES_O "##InsClone")) {
         // if (settings.unifiedDataView) {
-        switch (lastAssetType)
-        {
-          case 0:
-            // doAction(GUI_ACTION_INS_LIST_DUPLICATE);
-            break;
-          case 1:
-            // doAction(GUI_ACTION_WAVE_LIST_DUPLICATE);
-            break;
-          case 2:
-            // doAction(GUI_ACTION_SAMPLE_LIST_DUPLICATE);
-            break;
+        switch (self->lastAssetType) {
+        case 0:
+          // doAction(GUI_ACTION_INS_LIST_DUPLICATE);
+          break;
+        case 1:
+          // doAction(GUI_ACTION_WAVE_LIST_DUPLICATE);
+          break;
+        case 2:
+          // doAction(GUI_ACTION_SAMPLE_LIST_DUPLICATE);
+          break;
         }
         // } else {
         // doAction(GUI_ACTION_INS_LIST_DUPLICATE);
         // }
       }
-      if (ImGui::IsItemClicked())
-      {
+      if (ImGui::IsItemClicked()) {
         if (self->act)
-          self->act->actDuplicate(
-              self->currentlyViewingType,
-              currentlySelectedOfViewingType);
+          self->act->actDuplicate(self->currentlyViewingType,
+                                  currentlySelectedOfViewingType);
       }
-      if (ImGui::IsItemHovered())
-      {
+      if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Duplicate");
       }
     }
     ImGui::SameLine();
     { /* Button: Load item */
-      if (ImGui::Button(ICON_FA_FOLDER_OPEN "##InsLoad"))
-      {
+      if (ImGui::Button(ICON_FA_FOLDER_OPEN "##InsLoad")) {
         // if (settings.unifiedDataView) {
-        switch (lastAssetType)
-        {
-          case 0:
-            // doAction(GUI_ACTION_INS_LIST_OPEN);
-            break;
-          case 1:
-            // doAction(GUI_ACTION_WAVE_LIST_OPEN);
-            break;
-          case 2:
-            // doAction(GUI_ACTION_SAMPLE_LIST_OPEN);
-            break;
+        switch (self->lastAssetType) {
+        case 0:
+          // doAction(GUI_ACTION_INS_LIST_OPEN);
+          break;
+        case 1:
+          // doAction(GUI_ACTION_WAVE_LIST_OPEN);
+          break;
+        case 2:
+          // doAction(GUI_ACTION_SAMPLE_LIST_OPEN);
+          break;
         }
         // } else {
         // doAction(GUI_ACTION_INS_LIST_OPEN);
         // }
       }
-      if (ImGui::IsItemClicked())
-      {
-        if (self->act)
-          self->act->actLoad(self->currentlyViewingType);
+      if (ImGui::IsItemClicked()) {
+        if (self->act) self->act->actLoad(self->currentlyViewingType);
       }
-      if (ImGui::IsItemHovered())
-      {
+      if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Open");
       }
     }
@@ -524,71 +377,59 @@ void drawInsList(Gui *self)
       */
     ImGui::SameLine();
     { /* Button: save item */
-      if (ImGui::Button(ICON_FA_FLOPPY_O "##InsSave"))
-      {
+      if (ImGui::Button(ICON_FA_FLOPPY_O "##InsSave")) {
         // if (settings.unifiedDataView) {
-        switch (lastAssetType)
-        {
-          case 0:
-            // doAction(GUI_ACTION_INS_LIST_SAVE);
-            break;
-          case 1:
-            // doAction(GUI_ACTION_WAVE_LIST_SAVE);
-            break;
-          case 2:
-            // doAction(GUI_ACTION_SAMPLE_LIST_SAVE);
-            break;
+        switch (self->lastAssetType) {
+        case 0:
+          // doAction(GUI_ACTION_INS_LIST_SAVE);
+          break;
+        case 1:
+          // doAction(GUI_ACTION_WAVE_LIST_SAVE);
+          break;
+        case 2:
+          // doAction(GUI_ACTION_SAMPLE_LIST_SAVE);
+          break;
         }
       }
-      if (ImGui::IsItemClicked())
-      {
+      if (ImGui::IsItemClicked()) {
         if (self->act)
           self->act->actSave(self->currentlyViewingType,
-                                  currentlySelectedOfViewingType);
+                             currentlySelectedOfViewingType);
       }
-      if (ImGui::IsItemHovered())
-      {
+      if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Save");
       }
       if (ImGui::BeginPopupContextItem("InsSaveFormats",
-                                       ImGuiMouseButton_Right))
-      {
+                                       ImGuiMouseButton_Right)) {
         // if (settings.unifiedDataView) {
-        if (ImGui::MenuItem("save instrument as .dmp..."))
-        {
+        if (ImGui::MenuItem("save instrument as .dmp...")) {
           // doAction(GUI_ACTION_INS_LIST_SAVE_DMP);
         }
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("save wavetable as .dmw..."))
-        {
+        if (ImGui::MenuItem("save wavetable as .dmw...")) {
           // doAction(GUI_ACTION_WAVE_LIST_SAVE_DMW);
         }
-        if (ImGui::MenuItem("save raw wavetable..."))
-        {
+        if (ImGui::MenuItem("save raw wavetable...")) {
           // doAction(GUI_ACTION_WAVE_LIST_SAVE_RAW);
         }
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("save raw sample..."))
-        {
+        if (ImGui::MenuItem("save raw sample...")) {
           // doAction(GUI_ACTION_SAMPLE_LIST_SAVE_RAW);
         }
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("save all instruments..."))
-        {
+        if (ImGui::MenuItem("save all instruments...")) {
           // doAction(GUI_ACTION_INS_LIST_SAVE_ALL);
         }
-        if (ImGui::MenuItem("save all wavetables..."))
-        {
+        if (ImGui::MenuItem("save all wavetables...")) {
           // doAction(GUI_ACTION_WAVE_LIST_SAVE_ALL);
         }
-        if (ImGui::MenuItem("save all samples..."))
-        {
+        if (ImGui::MenuItem("save all samples...")) {
           // doAction(GUI_ACTION_SAMPLE_LIST_SAVE_ALL);
         }
         ImGui::EndPopup();
@@ -596,72 +437,60 @@ void drawInsList(Gui *self)
     }
     ImGui::SameLine();
     { /* Button: move item up the list */
-      if (ImGui::Button(ICON_FA_ARROW_UP "##InsUp"))
-      {
-        switch (lastAssetType)
-        {
-          case 0:
-            // doAction(GUI_ACTION_INS_LIST_MOVE_UP);
-            break;
-          case 1:
-            // doAction(GUI_ACTION_WAVE_LIST_MOVE_UP);
-            break;
-          case 2:
-            // doAction(GUI_ACTION_SAMPLE_LIST_MOVE_UP);
-            break;
+      if (ImGui::Button(ICON_FA_ARROW_UP "##InsUp")) {
+        switch (self->lastAssetType) {
+        case 0:
+          // doAction(GUI_ACTION_INS_LIST_MOVE_UP);
+          break;
+        case 1:
+          // doAction(GUI_ACTION_WAVE_LIST_MOVE_UP);
+          break;
+        case 2:
+          // doAction(GUI_ACTION_SAMPLE_LIST_MOVE_UP);
+          break;
         }
       }
-      if (ImGui::IsItemClicked())
-      {
+      if (ImGui::IsItemClicked()) {
         if (self->act)
           self->act->actMoveUp(self->currentlyViewingType,
-                                    currentlySelectedOfViewingType);
+                               currentlySelectedOfViewingType);
       }
-      if (ImGui::IsItemHovered())
-      {
+      if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Move up");
       }
     }
     ImGui::SameLine();
     { /* Button: move item down the list */
-      if (ImGui::Button(ICON_FA_ARROW_DOWN "##InsDown"))
-      {
-        switch (lastAssetType)
-        {
-          case 0:
-            // doAction(GUI_ACTION_INS_LIST_MOVE_DOWN);
-            break;
-          case 1:
-            // doAction(GUI_ACTION_WAVE_LIST_MOVE_DOWN);
-            break;
-          case 2:
-            // doAction(GUI_ACTION_SAMPLE_LIST_MOVE_DOWN);
-            break;
+      if (ImGui::Button(ICON_FA_ARROW_DOWN "##InsDown")) {
+        switch (self->lastAssetType) {
+        case 0:
+          // doAction(GUI_ACTION_INS_LIST_MOVE_DOWN);
+          break;
+        case 1:
+          // doAction(GUI_ACTION_WAVE_LIST_MOVE_DOWN);
+          break;
+        case 2:
+          // doAction(GUI_ACTION_SAMPLE_LIST_MOVE_DOWN);
+          break;
         }
       }
-      if (ImGui::IsItemClicked())
-      {
+      if (ImGui::IsItemClicked()) {
         if (self->act)
           self->act->actMoveDown(self->currentlyViewingType,
-                                      currentlySelectedOfViewingType);
+                                 currentlySelectedOfViewingType);
       }
-      if (ImGui::IsItemHovered())
-      {
+      if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Move down");
       }
-      if (lastAssetType == 2)
-      {
+      if (self->lastAssetType == 2) {
         ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_VOLUME_UP "##PreviewSampleL"))
-        {
+        if (ImGui::Button(ICON_FA_VOLUME_UP "##PreviewSampleL")) {
           // doAction(GUI_ACTION_SAMPLE_LIST_PREVIEW);
         }
-        if (ImGui::IsItemHovered())
-        {
+        if (ImGui::IsItemHovered()) {
           ImGui::SetTooltip("Preview (right click to stop)");
         }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-        {
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
           // doAction(GUI_ACTION_SAMPLE_LIST_STOP_PREVIEW);
         }
       }
@@ -669,30 +498,26 @@ void drawInsList(Gui *self)
     ImGui::SameLine();
     { /* Button: delete item */
       // pushDestColor();
-      if (ImGui::Button(ICON_FA_TIMES "##InsDelete"))
-      {
-        switch (lastAssetType)
-        {
-          case 0:
-            // doAction(GUI_ACTION_INS_LIST_DELETE);
-            break;
-          case 1:
-            // doAction(GUI_ACTION_WAVE_LIST_DELETE);
-            break;
-          case 2:
-            // doAction(GUI_ACTION_SAMPLE_LIST_DELETE);
-            break;
+      if (ImGui::Button(ICON_FA_TIMES "##InsDelete")) {
+        switch (self->lastAssetType) {
+        case 0:
+          // doAction(GUI_ACTION_INS_LIST_DELETE);
+          break;
+        case 1:
+          // doAction(GUI_ACTION_WAVE_LIST_DELETE);
+          break;
+        case 2:
+          // doAction(GUI_ACTION_SAMPLE_LIST_DELETE);
+          break;
         }
       }
-      if (ImGui::IsItemClicked())
-      {
+      if (ImGui::IsItemClicked()) {
         if (self->act)
           self->act->actDelete(self->currentlyViewingType,
-                                    currentlySelectedOfViewingType);
+                               currentlySelectedOfViewingType);
       }
       // popDestColor();
-      if (ImGui::IsItemHovered())
-      {
+      if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Delete");
       }
     }
