@@ -6,4 +6,6 @@
 
 struct Divizion {
   DivEngine* e;
+
+  Divizion(DivEngine *e);
 };

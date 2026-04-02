@@ -1,14 +1,14 @@
 #include <cstdint>
+#include "vst.hpp"
+#include "../divizion.hpp"
 #include "src/engine/engine.h"
 #include "src/ta-log.h"
-#include "src/vst.hpp"
-#include "divizion_state.hpp"
 
 int32_t processEvents(Vst::AEffect *effect, Vst::VstEvents *e)
 {
-  DivizionInstance *di = (DivizionInstance *)effect->object;
+  Divizion *di = (Divizion *)effect->object;
   if (!di) return 0;
-  if (!di->engine) return 0;
+  if (!di->e) return 0;
 
   for (int32_t i = 0; i < e->numEvents; i++)
   {
@@ -40,17 +40,17 @@ int32_t processEvents(Vst::AEffect *effect, Vst::VstEvents *e)
       if (note > 0)
       {
         // logV("sending note on");
-        di->engine->noteOn(status & 0xf, 0, note-12,velocity);
+        di->e->noteOn(status & 0xf, 0, note-12,velocity);
       }
       else
       {
         // logV("sending note off");
-        di->engine->noteOff(status & 0xf);
+        di->e->noteOff(status & 0xf);
       }
       break;
     case 0x80:
       // logV("sending note off");
-      di->engine->noteOff(status & 0xf);
+      di->e->noteOff(status & 0xf);
       break;
     }
   }

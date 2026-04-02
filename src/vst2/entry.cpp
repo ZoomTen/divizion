@@ -1,4 +1,4 @@
-#include "../divizion_state.hpp"
+#include "../divizion.hpp"
 #include "src/engine/engine.h"
 #include "src/ta-log.h"
 #include "vst.hpp"
@@ -13,6 +13,7 @@ extern intptr_t dispatcher(Vst::AEffect *effect, Vst::VstOpcodeToPlugin opcode, 
 FILE *logger = nullptr;
 
 static DivEngine *newEngine(void);
+static int loadFile(DivEngine* e, String path);
 
 // i can't C yet i must C++
 extern "C"
@@ -29,7 +30,8 @@ extern "C"
     initLog(stdout);
     
     DivEngine *engine = newEngine(); // requires log to be init first
-    DivizionInstance *di = new DivizionInstance(engine);
+    // loadFile(engine, "Z:\\home\\.subhome\\user.zumi\\projects\\divizion2\\cerulean.fur");
+    Divizion *di = new Divizion(engine);
 
     e->magic = Vst::kEffectMagic;
     e->dispatcher = dispatcher;
@@ -66,4 +68,60 @@ DivEngine *newEngine(void)
 
   e->createNew("id0=4", "Game Boy", false);
   return e;
+}
+
+int loadFile(DivEngine* e, String path)
+{
+  if (!path.empty()) {
+    logI("loading module...");
+    FILE* f= fopen(path.c_str(), "rb");
+    if (f == NULL) {
+      perror("error");
+      return 1;
+    }
+    if (fseek(f, 0, SEEK_END) < 0) {
+      perror("size error");
+      fmt::sprintf(_("on seek: %s"), strerror(errno));
+      fclose(f);
+      return 1;
+    }
+    ssize_t len= ftell(f);
+    if (len == (SIZE_MAX >> 1)) {
+      perror("could not get file length");
+      fmt::sprintf(_("on pre tell: %s"), strerror(errno));
+      fclose(f);
+      return 1;
+    }
+    if (len < 1) {
+      if (len == 0) {
+        logE("that file is empty!");
+      } else {
+        perror("tell error");
+        fmt::sprintf(_("on tell: %s"), strerror(errno));
+      }
+      fclose(f);
+      return 1;
+    }
+    if (fseek(f, 0, SEEK_SET) < 0) {
+      perror("size error");
+      fmt::sprintf(_("on get size: %s"), strerror(errno));
+      fclose(f);
+      return 1;
+    }
+    unsigned char* file= new unsigned char[len];
+    if (fread(file, 1, (size_t)len, f) != (size_t)len) {
+      perror("read error");
+      fmt::sprintf(_("on read: %s"), strerror(errno));
+      fclose(f);
+      delete[] file;
+      return 1;
+    }
+    fclose(f);
+    if (!e->load(file, (size_t)len, path.c_str())) {
+      e->getLastError();
+      logE("could not open file!");
+      return 1;
+    }
+  }
+  return 0;
 }

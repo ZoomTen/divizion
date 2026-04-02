@@ -47,7 +47,7 @@ furnace_dep = furnace_proj.dependency('furnace')
 ## source files
 
 divizion_src = files(
-
+  'src/divizion.cpp'
 )
 
 gui_src = files(
@@ -64,14 +64,25 @@ gui_src = files(
   'src/mml.cpp'
 )
 
-src = [divizion_src, gui_src]
+vst_src = files(
+  'src/vst2/dispatch.cpp',
+  'src/vst2/entry.cpp',
+  'src/vst2/output.cpp',
+  'src/vst2/params.cpp',
+  'src/vst2/process.cpp',
+  'src/vst2/io.cpp',
+)
 
-if get_option('standalone')
+src = [divizion_src, gui_src]
+def = ''
+
+if get_option('vst2')
+  src += vst_src
+  def += 'src/vst2/divizion.def'
+elif get_option('standalone')
   src += 'src/standalone/main.cpp'
 endif
 
-## windows def file
-# def = 'src/divizion.def'
 
 ## includes
 inc = []
