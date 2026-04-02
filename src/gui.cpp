@@ -4,6 +4,9 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui_sw.hpp"
+#include "src/engine/instrument.h"
+#include "src/engine/sample.h"
+#include "src/engine/wavetable.h"
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_log.h>
 #include <cstdio>
@@ -15,6 +18,10 @@ static void drawInsList(Gui *self);
 static void drawAboutWindow(bool *showFlag);
 static void drawInsMgmt(Gui *self);
 static void renderWindow(Gui *self);
+
+extern void renderListItem(Gui *self, size_t index, DivInstrument *item);
+extern void renderListItem(Gui *self, size_t index, DivWavetable *item);
+extern void renderListItem(Gui *self, size_t index, DivSample *item);
 
 int lastAssetType;
 
@@ -81,6 +88,11 @@ void Gui::RenderGui()
   SDL_UpdateWindowSurface(this->w);
 }
 
+bool channelsOpen = false;
+#define MARK_MODIFIED
+const int dpiScale = 1;
+#define _(x) x
+
 void renderWindow(Gui *self)
 {
   ImGui::Begin("Root", NULL,
@@ -115,6 +127,98 @@ void renderWindow(Gui *self)
     }
     if (ImGui::BeginTabItem("Chip Management"))
     {
+
+
+
+
+
+ if (ImGui::Begin("Channels",&channelsOpen,0,_("Channels"))) {
+    if (ImGui::BeginTable("ChannelList",5)) {
+      ImGui::TableSetupColumn("c0",ImGuiTableColumnFlags_WidthFixed,0.0);
+      ImGui::TableSetupColumn("c1",ImGuiTableColumnFlags_WidthFixed,0.0);
+      ImGui::TableSetupColumn("c2",ImGuiTableColumnFlags_WidthFixed,0.0);
+      ImGui::TableSetupColumn("c3",ImGuiTableColumnFlags_WidthStretch,0.0);
+      ImGui::TableSetupColumn("c4",ImGuiTableColumnFlags_WidthFixed,48.0f*dpiScale);
+      ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+      ImGui::TableNextColumn();
+      ImGui::Text(_("Pat"));
+      ImGui::TableNextColumn();
+      ImGui::Text(_("Osc"));
+      ImGui::TableNextColumn();
+      ImGui::Text(_("Swap"));
+      ImGui::TableNextColumn();
+      ImGui::Text(_("Name"));
+      for (int i=0; i<e->getTotalChannelCount(); i++) {
+        ImGui::PushID(i);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        if (ImGui::Checkbox("##VisiblePat",&self->curSubSong->chanShow[i])) {
+          MARK_MODIFIED;
+        }
+        if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip(_("Show in pattern"));
+        }
+        ImGui::TableNextColumn();
+        if (ImGui::Checkbox("##VisibleChanOsc",&e->curSubSong->chanShowChanOsc[i])) {
+          MARK_MODIFIED;
+        }
+        if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip(_("Show in per-channel oscilloscope"));
+        }
+        ImGui::TableNextColumn();
+        if (ImGui::Button(ICON_FA_ARROWS)) {
+        }
+        if (ImGui::BeginDragDropSource()) {
+          chanToMove=i;
+          ImGui::SetDragDropPayload("FUR_CHAN",NULL,0,ImGuiCond_Once);
+          ImGui::Button(ICON_FA_ARROWS "##ChanDrag");
+          ImGui::EndDragDropSource();
+        } else if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip(_("%s #%d\n(drag to swap channels)"),e->getSystemName(e->sysOfChan[i]),e->dispatchChanOfChan[i]);
+        }
+        if (ImGui::BeginDragDropTarget()) {
+          const ImGuiPayload* dragItem=ImGui::AcceptDragDropPayload("FUR_CHAN");
+          if (dragItem!=NULL) {
+            if (dragItem->IsDataType("FUR_CHAN")) {
+              if (chanToMove!=i && chanToMove>=0) {
+                e->swapChannelsP(chanToMove,i);
+                MARK_MODIFIED;
+              }
+              chanToMove=-1;
+            }
+          }
+          ImGui::EndDragDropTarget();
+        }
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        if (ImGui::InputTextWithHint("##ChanName",e->getChannelName(i),&e->curSubSong->chanName[i])) {
+          MARK_MODIFIED;
+        }
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        if (ImGui::InputTextWithHint("##ChanShortName",e->getChannelShortName(i),&e->curSubSong->chanShortName[i])) {
+          MARK_MODIFIED;
+        }
+        ImGui::PopID();
+      }
+      ImGui::EndTable();
+    }
+  }
+  if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) curWindow=GUI_WINDOW_CHANNELS;
+  ImGui::End();
+
+
+
+
+
+
+
+
+
+
+
+
+
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();
@@ -182,7 +286,7 @@ void drawInsList(Gui *self)
   {
     if (ImGui::BeginTabItem("Inst"))
     {
-      self->currentlyViewingType = INST;
+      self->currentlyViewingType = INSTRUMENT;
       if (self->act)
       {
         ImGui::BeginChild("Instr list");
@@ -190,53 +294,52 @@ void drawInsList(Gui *self)
         for (size_t i = 0; i < list.size(); i++)
         {
           ImGui::PushID(i);
-
-          if (ImGui::Selectable(list[i].c_str(),
-                                i == self->instSelected))
-          {
-            self->selectedType = self->currentlyViewingType;
-            self->selectedIndex = i;
-            self->instSelected = i;
-          }
+          renderListItem(self, i, list[i]);
           ImGui::PopID();
         }
         ImGui::EndChild();
       }
       else
-        ImGui::Text("getInfoA missing");
+        ImGui::Text("getInstrumentList missing");
 
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("Wave"))
     {
-      self->currentlyViewingType = WAVE;
-      for (int i = 0; i < 12; i++)
+      self->currentlyViewingType = WAVETABLE;
+      if (self->act)
       {
-        ImGui::PushID(i);
-        if (ImGui::Selectable("DEF", i == self->waveSelected))
+        ImGui::BeginChild("Instr list");
+        auto list = self->act->getWavetables();
+        for (size_t i = 0; i < list.size(); i++)
         {
-          self->selectedType = self->currentlyViewingType;
-          self->selectedIndex = i;
-          self->waveSelected = i;
+          ImGui::PushID(i);
+          renderListItem(self, i, list[i]);
+          ImGui::PopID();
         }
-        ImGui::PopID();
+        ImGui::EndChild();
       }
+      else
+        ImGui::Text("getWavetables missing");
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("Samp"))
     {
-      self->currentlyViewingType = SAMP;
-      for (int i = 0; i < 12; i++)
+      self->currentlyViewingType = SAMPLE;
+      if (self->act)
       {
-        ImGui::PushID(i);
-        if (ImGui::Selectable("GHI", i == self->sampSelected))
+        ImGui::BeginChild("Instr list");
+        auto list = self->act->getSamples();
+        for (size_t i = 0; i < list.size(); i++)
         {
-          self->selectedType = self->currentlyViewingType;
-          self->selectedIndex = i;
-          self->sampSelected = i;
+          ImGui::PushID(i);
+          renderListItem(self, i, list[i]);
+          ImGui::PopID();
         }
-        ImGui::PopID();
+        ImGui::EndChild();
       }
+      else
+        ImGui::Text("getWavetables missing");
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();
@@ -247,13 +350,13 @@ void drawInsList(Gui *self)
     int currentlySelectedOfViewingType;
     switch (self->currentlyViewingType)
     {
-      case INST:
+      case INSTRUMENT:
         currentlySelectedOfViewingType = self->instSelected;
         break;
-      case WAVE:
+      case WAVETABLE:
         currentlySelectedOfViewingType = self->waveSelected;
         break;
-      case SAMP:
+      case SAMPLE:
         currentlySelectedOfViewingType = self->sampSelected;
         break;
       default:

@@ -8,14 +8,6 @@
 #include <cstdint>
 #include <unordered_map>
 
-typedef enum {
-  NONE = -1,
-  INST,
-  WAVE,
-  SAMP
-} SelectedAssetType;
-
-
 struct Gui
 {
   // methods
@@ -33,8 +25,8 @@ struct Gui
   bool showDebug{false};
 
   // states
-  SelectedAssetType currentlyViewingType{INST};
-  SelectedAssetType selectedType{NONE};
+  ActiveItemType currentlyViewingType{INSTRUMENT};
+  ActiveItemType selectedType{NONE};
   int selectedIndex{-1};
   int instSelected{-1};
   int waveSelected{-1};

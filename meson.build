@@ -14,6 +14,7 @@ add_global_arguments( # fix SDL compilation errors
   '-D__FIReference_1_int=__FIReference_1_INT32',
   '-D__FIReference_1_int_get_Value=__FIReference_1_INT32_get_Value',
   '-D__FIReference_1_int_Release=__FIReference_1_INT32_Release',
+  '-DFMT_HEADER_ONLY',
   language:['c','cpp'])
 
 # SDL deps
@@ -50,14 +51,19 @@ divizion_src = files(
 )
 
 gui_src = files(
-  'src/gui.cpp'
+  'src/gui.cpp',
+  'src/gui_render_list_item.cpp'
 )
 
 mock_src = files(
   'src/mock/mock.cpp'
 )
 
-src = [divizion_src, gui_src, mock_src]
+impl_src = files(
+  'src/impl_actions.cpp'
+)
+
+src = [divizion_src, gui_src, impl_src]
 
 if get_option('standalone')
   src += 'src/standalone/main.cpp'
@@ -70,11 +76,16 @@ endif
 inc = []
 # inc += imgui_inc
 
+zlib_dep = dependency('zlib', required:host_machine.system()=='linux')
+dl_dep = cpp.find_library('dl', required:host_machine.system()=='linux')
+rtmidi_dep = cpp.find_library('rtmidi', required:host_machine.system()=='linux')
+
 ## dependencies
 deps = [shlwapi,
   sdl2_dep, sdl2main_dep,
   imgui_dep, imgui_sw_dep,
-  furnace_dep]
+  furnace_dep,
+  zlib_dep, dl_dep, rtmidi_dep]
 
 ## compiler flags
 ldflags = []
