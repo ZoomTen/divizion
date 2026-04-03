@@ -120,6 +120,22 @@ void renderWindow(Gui* self)
   ImGui::EndChild();
   if (self->showAbout) drawAboutWindow(&self->showAbout);
   if (self->showDebug) ImGui::ShowMetricsWindow(&self->showDebug);
+
+  if (ImGui::BeginPopupModal("Error", NULL,
+                             ImGuiWindowFlags_AlwaysAutoResize)) {
+    ImGui::Text(_("%s"), self->act->guiErrorMessage.c_str());
+    if (ImGui::Button(_("OK"))) {
+      self->act->guiErrorMessage = "";
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+  }
+
+  if (self->act)
+    if (!self->act->guiErrorMessage.empty()) {
+      ImGui::OpenPopup("Error");
+    }
+
   ImGui::End();
 }
 

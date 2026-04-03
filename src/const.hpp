@@ -391,3 +391,6 @@ enum FurnaceGUIColors {
 extern const ImVec4 uiColors[GUI_COLOR_MAX];
 extern const char* noteNames[180];
 extern const char* macroLFOShapes[4];
+extern const int availableSystems[];
+extern const int* chipCategories[];
+extern const char* chipCategoryNames[];

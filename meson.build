@@ -59,6 +59,7 @@ gui_src = files(
   'src/gui_draw_macros.cpp',
   'src/impl_actions.cpp',
   'src/impl_actions_draw_chan_info.cpp',
+  'src/impl_actions_sys_categories.cpp',
   'src/impl_actions_draw_instr_info.cpp',
   'src/plot_nolerp.cpp',
   'src/mml.cpp'

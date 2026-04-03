@@ -4,6 +4,7 @@
 #include "src/engine/instrument.h"
 #include "src/engine/sample.h"
 #include "src/engine/wavetable.h"
+#include "src/interface_actions.hpp"
 
 void drawInfo(DivizionActionsImpl* self, int index, DivEngine* e,
               DivInstrument* i);
@@ -14,6 +15,8 @@ void drawInvalidPage(void);
 DivizionActionsImpl::DivizionActionsImpl(DivEngine* e)
 {
   this->e = e;
+  this->guiErrorMessage = "";
+  this->initCategories();
 }
 
 void DivizionActionsImpl::drawInstrumentInfo(ActiveItemType type, int index)
@@ -44,7 +47,66 @@ void DivizionActionsImpl::drawInstrumentInfo(ActiveItemType type, int index)
   }
 }
 
-void DivizionActionsImpl::actAdd(ActiveItemType type) {}
+void DivizionActionsImpl::actAdd(ActiveItemType type)
+{
+  switch (type) {
+  case INSTRUMENT: {
+    int curIns = e->addInstrument();
+    if (curIns == -1) {
+      this->guiErrorMessage = "too many instruments!";
+    } else {
+      e->song.ins[curIns]->fm.fb = 0;
+      for (int i = 0; i < 4; i++) {
+        e->song.ins[curIns]->fm.op[i] = DivInstrumentFM::Operator();
+        e->song.ins[curIns]->fm.op[i].ar = 31;
+        e->song.ins[curIns]->fm.op[i].dr = 31;
+        e->song.ins[curIns]->fm.op[i].rr = 15;
+        e->song.ins[curIns]->fm.op[i].tl = 127;
+        e->song.ins[curIns]->fm.op[i].dt = 3;
+        e->song.ins[curIns]->esfm.op[i].ct = 0;
+        e->song.ins[curIns]->esfm.op[i].dt = 0;
+        e->song.ins[curIns]->esfm.op[i].modIn = 0;
+        e->song.ins[curIns]->esfm.op[i].outLvl = 0;
+      }
+    }
+    break;
+  }
+  case WAVETABLE: {
+    std::vector<DivSystem> alreadyDone;
+    for (int i = 0; i < e->song.systemLen; i++) {
+      bool skip = false;
+      for (DivSystem j : alreadyDone) {
+        if (e->song.system[i] == j) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) continue;
+      const DivSysDef* sysDef = e->getSystemDef(e->song.system[i]);
+      alreadyDone.push_back(e->song.system[i]);
+      if (sysDef == NULL) continue;
+      if (sysDef->waveHeight == 0) continue;
+    }
+    int finalWidth = 32;
+    int finalHeight = 32;
+    int curWave = e->addWave();
+    if (curWave == -1) {
+      this->guiErrorMessage = "too many wavetables!";
+    } else {
+      e->song.wave[curWave]->len = finalWidth;
+      e->song.wave[curWave]->max = finalHeight - 1;
+      for (int j = 0; j < finalWidth; j++) {
+        e->song.wave[curWave]->data[j] = (j * finalHeight) / finalWidth;
+      }
+    }
+    break;
+  }
+  case SAMPLE:
+    int curSample = e->addSample();
+    if (curSample == -1) this->guiErrorMessage = "too many samples!";
+    break;
+  }
+}
 
 void DivizionActionsImpl::actDuplicate(ActiveItemType type, int index) {}
 

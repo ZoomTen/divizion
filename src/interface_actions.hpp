@@ -45,5 +45,7 @@ struct DivizionActions {
 
   virtual void drawChannelInfo() = 0;
 
+  std::string guiErrorMessage;
+
   virtual ~DivizionActions() = default;
 };

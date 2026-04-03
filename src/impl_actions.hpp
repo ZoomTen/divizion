@@ -3,6 +3,7 @@
 #include "interface_actions.hpp"
 #include "src/engine/engine.h"
 #include "src/furnace_macro_def.hpp"
+#include "src/impl_actions_sys_categories.hpp"
 
 struct DivizionActionsImpl : DivizionActions {
   // core stuff
@@ -54,7 +55,19 @@ struct DivizionActionsImpl : DivizionActions {
   int waveDragMin{ 0 };
   int waveDragMax{ 0 };
   bool waveDragActive{ false };
-  String mmlString[32];
+  String mmlString[32]{""};
+  bool preserveChanPos{false};
+  bool sysDupCloneChannels{false};
+  bool sysDupEnd{false};
+  int sysToMove{-1};
+  int sysToDelete{-1};
+  bool snesFilterHex{false};
+  String mmlStringSNES{""};
+  std::vector<FurnaceGUISysCategory> sysCategories;
+  void initCategories();
+  const int* curSysSection;
+  String sysSearchQuery;
+  std::vector<DivSystem> sysSearchResults;
 
   // actions
   void drawInstrumentInfo(ActiveItemType type, int index) override;
