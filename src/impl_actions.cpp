@@ -143,3 +143,8 @@ void drawInvalidPage(void)
 {
   ImGui::Text("<- select something...");
 }
+
+void DivizionActionsImpl::panic()
+{
+  this->e->syncReset();
+}

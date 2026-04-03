@@ -99,6 +99,7 @@ void renderWindow(Gui* self)
       self->showDebug = true;
     }
     if (ImGui::MenuItem("Panic")) {
+      if (self->act) self->act->panic();
     }
     if (ImGui::MenuItem("About")) {
       self->showAbout = true;

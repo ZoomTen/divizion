@@ -82,6 +82,7 @@ struct DivizionActionsImpl : DivizionActions {
   vector<DivInstrument*> getInstrumentList() override;
   vector<DivWavetable*> getWavetables() override;
   vector<DivSample*> getSamples() override;
+  void panic() override;
 };
 
 #define _GET(x, y) (y < 0) ? nullptr : (y < x.size()) ? x[y] : nullptr;
