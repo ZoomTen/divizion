@@ -8,9 +8,11 @@
 
 void drawInfo(DivizionActionsImpl* self, int index, DivEngine* e,
               DivInstrument* i);
-void drawInfo(DivWavetable* i);
+void drawInfo(DivizionActionsImpl* self, int index, DivWavetable* i);
 void drawInfo(DivSample* i);
 void drawInvalidPage(void);
+
+extern void drawWaveEdit(DivizionActionsImpl* self, DivWavetable* i);
 
 DivizionActionsImpl::DivizionActionsImpl(DivEngine* e)
 {
@@ -33,7 +35,7 @@ void DivizionActionsImpl::drawInstrumentInfo(ActiveItemType type, int index)
     break;
   case WAVETABLE:
     wav = _GET(this->e->song.wave, index);
-    if (wav) drawInfo(wav);
+    if (wav) drawInfo(this, index,wav);
     else drawInvalidPage();
     break;
   case SAMPLE:
@@ -135,9 +137,14 @@ vector<DivSample*> DivizionActionsImpl::getSamples()
   return this->e->song.sample;
 }
 
-void drawInfo(DivWavetable* i) {}
+void drawInfo(DivizionActionsImpl* self, int index, DivWavetable* i) {
+  self->curWave = index;
+  drawWaveEdit(self, i);
+}
 
-void drawInfo(DivSample* i) {}
+void drawInfo(DivSample* i) {
+  ImGui::Text("drawInfo: TODO");
+}
 
 void drawInvalidPage(void)
 {
@@ -147,4 +154,32 @@ void drawInvalidPage(void)
 void DivizionActionsImpl::panic()
 {
   this->e->syncReset();
+}
+
+void DivizionActionsImpl::drawChanInfo()
+{
+  // TODO: able to map MIDI channels to chip channels
+  if (ImGui::BeginTable("SystemList", 2)) {
+    // ImGui::TableSetupColumn("c1", ImGuiTableColumnFlags_WidthFixed);
+    ImGui::TableSetupColumn("c2", ImGuiTableColumnFlags_WidthFixed);
+    ImGui::TableSetupColumn("c3", ImGuiTableColumnFlags_WidthFixed);
+    ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+    // ImGui::TableNextColumn();
+    ImGui::TableNextColumn();
+    ImGui::Text("MIDI");
+    ImGui::TableNextColumn();
+    ImGui::Text("Chip");
+    for (int i = 0; i < 16; i++) {
+      ImGui::PushID(i);
+      ImGui::TableNextRow();
+      // ImGui::TableNextColumn();
+      // ImGui::Button(ICON_FA_ARROWS);
+      ImGui::TableNextColumn();
+      ImGui::Text("  %d  ", i+1);
+      ImGui::TableNextColumn();
+      ImGui::Text("%s #%d", e->getSystemName(e->sysOfChan[i]),e->dispatchChanOfChan[i]);
+      ImGui::PopID();
+    }
+    ImGui::EndTable();
+  }
 }

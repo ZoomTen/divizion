@@ -78,11 +78,14 @@ gui_src = files(
   'src/gui_draw_macros.cpp',
   'src/impl_actions.cpp',
   'src/impl_actions_draw_chip_info.cpp',
+  # 'src/impl_actions_draw_chan_info.cpp',
   'src/impl_actions_sys_categories.cpp',
   'src/impl_actions_draw_instr_info.cpp',
   'src/plot_nolerp.cpp',
   'src/text_input_widget.cpp',
-  'src/mml.cpp'
+  'src/mml.cpp',
+  'src/waveEdit.cpp',
+  'src/gui_process_drags.cpp'
 )
 gui_src += [fontawesome_header, furicon_header]
 

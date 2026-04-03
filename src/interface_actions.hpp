@@ -44,6 +44,7 @@ struct DivizionActions {
   virtual vector<DivSample*> getSamples() = 0;
 
   virtual void drawChipInfo() = 0;
+  virtual void drawChanInfo() = 0;
 
   virtual void panic() = 0;
   

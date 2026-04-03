@@ -1,5 +1,6 @@
 #pragma once
 
+#include "imgui.h"
 #include "interface_actions.hpp"
 #include "src/engine/engine.h"
 #include "src/furnace_macro_def.hpp"
@@ -68,10 +69,17 @@ struct DivizionActionsImpl : DivizionActions {
   const int* curSysSection;
   String sysSearchQuery;
   std::vector<DivSystem> sysSearchResults;
+  int curWave{0};
+  float waveGenInvertPoint{1.0f};
+  int waveEditStyle{0};
+  bool waveSigned{false};
+  bool waveHex{false};
+  String mmlStringW;
 
   // actions
   void drawInstrumentInfo(ActiveItemType type, int index) override;
   void drawChipInfo() override;
+  void drawChanInfo() override;
   void actAdd(ActiveItemType type) override;
   void actDuplicate(ActiveItemType type, int index) override;
   void actLoad(ActiveItemType type) override;

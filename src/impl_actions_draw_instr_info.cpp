@@ -108,6 +108,11 @@ void drawInfo(DivizionActionsImpl* self, int index, DivEngine* e,
         drawGbInfo(self, index, e, ins);
         ImGui::EndTabItem();
       }
+    } else {
+      if (ImGui::BeginTabItem("(Chip-specific)")) {
+        ImGui::Text("drawInfo: TODO");
+        ImGui::EndTabItem();
+      }
     }
 
     // macros
@@ -169,6 +174,8 @@ void drawInfo(DivizionActionsImpl* self, int index, DivEngine* e,
         case DIV_INS_MAX:
         case DIV_INS_NULL:
           break;
+        default:
+            ImGui::Text("drawInfo Macros: TODO");
         }
 
         drawMacros(self, macroList, self->macroEditStateMacros, ins);

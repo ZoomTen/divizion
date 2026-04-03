@@ -135,6 +135,10 @@ void renderWindow(Gui* self)
       if (self->act) self->act->drawChipInfo();
       ImGui::EndTabItem();
     }
+    if (ImGui::BeginTabItem("Channel Mappings")) {
+      if (self->act) self->act->drawChanInfo();
+      ImGui::EndTabItem();
+    }
     ImGui::EndTabBar();
   }
   ImGui::EndChild();

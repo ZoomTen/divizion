@@ -99,6 +99,84 @@ void decodeMMLStr(std::string& source, int* macro, unsigned char& macroLen,
   }
 }
 
+void decodeMMLStrW(std::string& source, int* macro, int& macroLen, int macroMin,
+                   int macroMax, bool hex)
+{
+  int buf = 0;
+  bool negaBuf = false;
+  bool hasVal = false;
+  macroLen = 0;
+  for (char& i : source) {
+    switch (i) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      hasVal = true;
+      buf *= hex ? 16 : 10;
+      buf += i - '0';
+      break;
+    case 'A':
+    case 'B':
+    case 'C':
+    case 'D':
+    case 'E':
+    case 'F':
+      if (hex) {
+        hasVal = true;
+        buf *= 16;
+        buf += 10 + i - 'A';
+      }
+      break;
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+      if (hex) {
+        hasVal = true;
+        buf *= 16;
+        buf += 10 + i - 'a';
+      }
+      break;
+    case '-':
+      if (!hasVal) {
+        hasVal = true;
+        negaBuf = true;
+      }
+      break;
+    case ' ':
+      if (hasVal) {
+        hasVal = false;
+        macro[macroLen] = negaBuf ? -buf : buf;
+        negaBuf = false;
+        if (macro[macroLen] < macroMin) macro[macroLen] = macroMin;
+        if (macro[macroLen] > macroMax) macro[macroLen] = macroMax;
+        macroLen++;
+        buf = 0;
+      }
+      break;
+    }
+    if (macroLen >= 256) break;
+  }
+  if (hasVal && macroLen < 256) {
+    hasVal = false;
+    macro[macroLen] = negaBuf ? -buf : buf;
+    negaBuf = false;
+    if (macro[macroLen] < macroMin) macro[macroLen] = macroMin;
+    if (macro[macroLen] > macroMax) macro[macroLen] = macroMax;
+    macroLen++;
+    buf = 0;
+  }
+}
+
 void encodeMMLStr(std::string& target, int* macro, int macroLen, int macroLoop,
                   int macroRel, bool hex, bool bit30)
 {
