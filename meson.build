@@ -88,6 +88,7 @@ vst_src = files(
   'src/vst2/params.cpp',
   'src/vst2/process.cpp',
   'src/vst2/io.cpp',
+  'src/vst2/handle_ui.cpp',
 )
 
 src = [divizion_src, gui_src]
@@ -133,6 +134,7 @@ if host_machine.system() == 'windows'
   ldflags += '-limm32'
   ldflags += '-lcfgmgr32'
   ldflags += '-lversion'
+  ldflags += '-lcomctl32'
   ldflags += '-s'
   
   vst_total_ldflags = ldflags + [meson.project_source_root() / vst_def]
