@@ -75,15 +75,12 @@ vst_src = files(
 )
 
 src = [divizion_src, gui_src]
-def = ''
 
-if get_option('vst2')
-  src += vst_src
-  def += 'src/vst2/divizion.def'
-elif get_option('standalone')
-  src += 'src/standalone/main.cpp'
-endif
+vst_total_src = src + vst_src
+vst_def = 'src/vst2/divizion.def'
 
+standalone_total_src = src + ['src/standalone/main.cpp']
+standalone_def = '../src/standalone/divizion.def' # ??????????
 
 ## includes
 inc = []
@@ -109,7 +106,6 @@ if host_machine.system() == 'windows'
     add_project_link_arguments(
       '-static',
       language: ['c','cpp'])
-    ldflags = [meson.project_source_root() / def]
   elif compiler == 'msvc'
     add_project_arguments(
       '/D_CRT_SECURE_NO_WARNINGS',
@@ -121,6 +117,14 @@ if host_machine.system() == 'windows'
   ldflags += '-limm32'
   ldflags += '-lcfgmgr32'
   ldflags += '-lversion'
+  ldflags += '-s'
+  
+  vst_total_ldflags = ldflags + [meson.project_source_root() / vst_def]
+endif
+
+standalone_total_ldflags = ldflags
+if host_machine.system() == 'windows'
+  standalone_total_ldflags += [standalone_def]
 endif
 
 # ldflags += '-Wl,--strip-all'
@@ -129,19 +133,21 @@ ldflags += '-Wl,--as-needed'
 ## build
 if get_option('vst2')
   shared_module('Divizion',
-    src,
+    vst_total_src,
     include_directories: inc,
     dependencies: deps,
     name_prefix: '',
-    link_args: ldflags,
+    link_args: vst_total_ldflags,
     install: false)
-elif get_option('standalone')
+endif
+
+if get_option('standalone')
   executable('divizion',
-    src,
+    standalone_total_src,
     include_directories: inc,
     dependencies: deps,
     name_prefix: '',
-    link_args: ldflags,
+    link_args: standalone_total_ldflags,
     install: false)
 endif
 

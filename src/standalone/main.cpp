@@ -16,7 +16,7 @@
 static DivEngine* newEngine(void);
 static int loadFile(DivEngine* e, String path);
 
-int main(void)
+int main(int argc, char* argv[])
 {
   SDL_Window* w= nullptr;
   SDL_Event e;
