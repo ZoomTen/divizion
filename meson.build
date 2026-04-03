@@ -44,6 +44,21 @@ furnace_opts = cmake.subproject_options()
 furnace_proj = cmake.subproject('furnace', options: furnace_opts)
 furnace_dep = furnace_proj.dependency('furnace')
 
+xxd = find_program('xxd')
+fontawesome_header = custom_target(
+  'gen_fontawesome_header',
+  input: 'src/FontAwesome.otf',
+  output: 'gen_fontawesome.cpp',
+  command: [xxd, '-i', '@INPUT@', '@OUTPUT@'],
+)
+
+furicon_header = custom_target(
+  'gen_furicon_header',
+  input: 'src/icons.ttf',
+  output: 'gen_ficons.cpp',
+  command: [xxd, '-i', '@INPUT@', '@OUTPUT@'],
+)
+
 ## source files
 
 divizion_src = files(
@@ -64,6 +79,7 @@ gui_src = files(
   'src/plot_nolerp.cpp',
   'src/mml.cpp'
 )
+gui_src += [fontawesome_header, furicon_header]
 
 vst_src = files(
   'src/vst2/dispatch.cpp',
@@ -131,7 +147,7 @@ endif
 ldflags += '-Wl,--as-needed'
 
 ## build
-if get_option('vst2')
+if get_option('vst2') and host_machine.system() == 'windows'
   shared_module('Divizion',
     vst_total_src,
     include_directories: inc,

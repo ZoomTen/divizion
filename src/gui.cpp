@@ -21,6 +21,15 @@ static void renderWindow(Gui* self);
 extern void renderListItem(Gui* self, size_t index, DivInstrument* item);
 extern void renderListItem(Gui* self, size_t index, DivWavetable* item);
 extern void renderListItem(Gui* self, size_t index, DivSample* item);
+extern unsigned char ___src_FontAwesome_otf[];
+extern unsigned char ___src_icons_ttf[];
+extern unsigned int ___src_FontAwesome_otf_len;
+extern unsigned int ___src_icons_ttf_len;
+
+#define ICON_MIN_FUR 0xe0f0
+#define ICON_MAX_FUR 0xe165
+static const ImWchar fontRangeIcon[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+static const ImWchar fontRangeFurIcon[] = { ICON_MIN_FUR, ICON_MAX_FUR, 0 };
 
 Gui::Gui(SDL_Window* w, DivizionActions* act)
 {
@@ -51,7 +60,17 @@ Gui::Gui(SDL_Window* w, DivizionActions* act)
   ImFontConfig config;
   config.MergeMode = true;
   config.PixelSnapH = true;
-  // io.Fonts->AddFontFromFileTTF("FontAwesome.otf", 0.0f, &config);
+  config.OversampleH = 1;
+  config.OversampleV = 1;
+  config.FontDataOwnedByAtlas = false;
+  io.IniFilename = NULL;
+
+  io.Fonts->AddFontFromMemoryTTF(
+    ___src_FontAwesome_otf, ___src_FontAwesome_otf_len,
+    12.0f * io.DisplayFramebufferScale.y, &config, fontRangeIcon);
+  io.Fonts->AddFontFromMemoryTTF(___src_icons_ttf, ___src_icons_ttf_len,
+                                 12.0f * io.DisplayFramebufferScale.y, &config,
+                                 fontRangeFurIcon);
 }
 
 Gui::~Gui()

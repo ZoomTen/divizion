@@ -76,7 +76,6 @@ void DivizionActionsImpl::drawChannelInfo()
             ImGui::Separator();
             drawSystemChannelInfoText(sysDef);
             drawSystemChannelInfo(sysDef);
-            ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
           }
         }
