@@ -71,7 +71,7 @@ struct DivizionActionsImpl : DivizionActions {
 
   // actions
   void drawInstrumentInfo(ActiveItemType type, int index) override;
-  void drawChannelInfo() override;
+  void drawChipInfo() override;
   void actAdd(ActiveItemType type) override;
   void actDuplicate(ActiveItemType type, int index) override;
   void actLoad(ActiveItemType type) override;

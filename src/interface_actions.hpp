@@ -43,7 +43,7 @@ struct DivizionActions {
   virtual vector<DivWavetable*> getWavetables() = 0;
   virtual vector<DivSample*> getSamples() = 0;
 
-  virtual void drawChannelInfo() = 0;
+  virtual void drawChipInfo() = 0;
 
   virtual void panic() = 0;
   

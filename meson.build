@@ -17,6 +17,10 @@ add_global_arguments( # fix SDL compilation errors
   '-DFMT_HEADER_ONLY',
   language:['c','cpp'])
 
+if host_machine.system() == 'windows'
+  add_project_arguments('-DWIN32', language: ['c', 'cpp'])
+endif
+
 # SDL deps
 sdl2_proj = cmake.subproject('sdl2',
   cmake_options : [
@@ -73,10 +77,11 @@ gui_src = files(
   'src/gui_render_list_item.cpp',
   'src/gui_draw_macros.cpp',
   'src/impl_actions.cpp',
-  'src/impl_actions_draw_chan_info.cpp',
+  'src/impl_actions_draw_chip_info.cpp',
   'src/impl_actions_sys_categories.cpp',
   'src/impl_actions_draw_instr_info.cpp',
   'src/plot_nolerp.cpp',
+  'src/text_input_widget.cpp',
   'src/mml.cpp'
 )
 gui_src += [fontawesome_header, furicon_header]
@@ -93,7 +98,14 @@ vst_src = files(
 
 src = [divizion_src, gui_src]
 
+if host_machine.system() == 'windows'
+  win = import('windows')
+  res = win.compile_resources('src/res.rc')
+  src = src + [res]
+endif
+
 vst_total_src = src + vst_src
+
 vst_def = 'src/vst2/divizion.def'
 
 standalone_total_src = src + ['src/standalone/main.cpp']

@@ -1,4 +1,5 @@
 #include "IconsFontAwesome4.h"
+#include "imgui.h"
 #include "imgui_internal.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "src/furnace_macro_def.hpp"
@@ -8,6 +9,7 @@
 #include "src/plot_nolerp.hpp"
 #include "src/mml.hpp"
 #include <vector>
+#include "text_input_widget.hpp"
 
 static void drawMacroEdit(DivizionActionsImpl* self, FurnaceGUIMacroDesc& i,
                           int totalFit, float availableWidth, int index);
@@ -371,9 +373,14 @@ void drawMacroEdit(DivizionActionsImpl* self, FurnaceGUIMacroDesc& i,
           i.macro->loop = 255;
         }
       }
+
+#ifdef WIN32
+      ImGui::Text("MML");
+      ImGui::SameLine();
+#endif
       ImGui::SetNextItemWidth(availableWidth);
       String& mmlStr = self->mmlString[index];
-      if (ImGui::InputText("##IMacroMML", &mmlStr)) {
+      if (InputText("IMacroMML", &mmlStr)) {
         decodeMMLStr(mmlStr, i.macro->val, i.macro->len, i.macro->loop, i.min,
                      (i.isBitfield) ? ((1 << (i.isBitfield ? (i.max) : 0)) - 1)
                                     : i.max,

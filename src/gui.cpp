@@ -132,7 +132,7 @@ void renderWindow(Gui* self)
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("Chip Management")) {
-      if (self->act) self->act->drawChannelInfo();
+      if (self->act) self->act->drawChipInfo();
       ImGui::EndTabItem();
     }
     ImGui::EndTabBar();

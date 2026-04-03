@@ -30,6 +30,7 @@ extern "C"
     initLog(stdout);
     
     DivEngine *engine = newEngine(); // requires log to be init first
+
     // loadFile(engine, "Z:\\home\\.subhome\\user.zumi\\projects\\divizion2\\cerulean.fur");
     Divizion *di = new Divizion(engine);
 
@@ -54,9 +55,8 @@ DivEngine *newEngine(void)
 {
   DivEngine *e = new DivEngine();
   
-  if (!e->prePreInit()) logE("engine stage -2 init failed");
-  else logI("prepreinit OK");
-
+  e->curSubSong->hz = 6000.0;
+  e->setConf("lowLatency", 1);
   e->setAudio(DIV_AUDIO_DUMMY);
   e->setView(DIV_STATUS_NOTHING);
 

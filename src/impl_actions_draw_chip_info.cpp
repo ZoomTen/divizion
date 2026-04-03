@@ -4,6 +4,7 @@
 #include "src/furnace_widgets.hpp"
 #include "src/impl_actions.hpp"
 #include "const.hpp"
+#include "text_input_widget.hpp"
 
 static bool drawSysConf(DivizionActionsImpl*self,int chan, int sysPos, DivSystem type, DivConfig& flags, bool modifyOnChange, bool fromMenu=false);
 static void drawSystemChannelInfo(const DivSysDef* whichDef);
@@ -11,10 +12,8 @@ static void drawSystemChannelInfoText(const DivSysDef* whichDef);
 static void autoDetectSystem(DivizionActionsImpl*self);
 static DivSystem systemPicker(DivizionActionsImpl*self,bool fullWidth);
 
-void DivizionActionsImpl::drawChannelInfo()
+void DivizionActionsImpl::drawChipInfo()
 {
-  ImGui::Checkbox(_("Preserve channel order"), &preserveChanPos);
-  ImGui::SameLine();
   ImGui::Checkbox(_("Clone channel data"), &sysDupCloneChannels);
   ImGui::SameLine();
   ImGui::Checkbox(_("Clone at end"), &sysDupEnd);
@@ -117,8 +116,7 @@ void DivizionActionsImpl::drawChannelInfo()
       ImGui::SameLine();
       ImGui::BeginDisabled(e->song.systemLen <= 1);
       if (ImGui::Button(ICON_FA_TIMES "##SysRemove")) {
-        sysToDelete = i;
-        // showWarning(_("Are you sure you want to remove this chip?"), GUI_WARN_SYSTEM_DEL);
+        e->removeSystem(i,preserveChanPos);
       }
       if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip(_("Remove"));
@@ -3270,8 +3268,12 @@ DivSystem systemPicker(DivizionActionsImpl*self,bool fullWidth) {
     self->curSysSection=availableSystems;
   }
 
+#ifdef WIN32
+  ImGui::Text("Search");
+  ImGui::SameLine();
+#endif
   ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-  if (ImGui::InputTextWithHint("##SysSearch",_("Search..."),&self->sysSearchQuery)) reissueSearch=true;
+  if (InputText("SysSearch",&self->sysSearchQuery)) reissueSearch=true;
   if (ImGui::BeginTabBar("SysCats")) {
     for (int i=0; chipCategories[i]; i++) {
       if (ImGui::BeginTabItem(_(chipCategoryNames[i]))) {

@@ -1,6 +1,6 @@
 
-#include "IconsFontAwesome4.h"
 #include "const.hpp"
+#include "text_input_widget.hpp"
 #include "furnace_gui_utils.hpp"
 #include "furnace_macro_def.hpp"
 #include "furnace_widgets.hpp"
@@ -61,7 +61,7 @@ void drawInfo(DivizionActionsImpl* self, int index, DivEngine* e,
     ImGui::TableNextColumn();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     ImGui::PushID(2 + index);
-    ImGui::InputText("##Name", &ins->name, ins->name.size());
+    InputText("Name", &ins->name);
     ImGui::PopID();
 
     ImGui::TableNextRow();
