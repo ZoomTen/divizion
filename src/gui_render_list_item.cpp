@@ -1,3 +1,4 @@
+#include "fmt/printf.h"
 #include "src/engine/instrument.h"
 #include "src/engine/sample.h"
 #include "src/engine/wavetable.h"
@@ -5,7 +6,8 @@
 
 void renderListItem(Gui* self, size_t i, DivInstrument* item)
 {
-  if (ImGui::Selectable(item->name.c_str(), i == self->instSelected)) {
+  std::string itemName = fmt::sprintf("%02d.%s", i+1, item->name);
+  if (ImGui::Selectable(itemName.c_str(), i == self->instSelected)) {
     self->selectedType = self->currentlyViewingType;
     self->selectedIndex = i;
     self->instSelected = i;
