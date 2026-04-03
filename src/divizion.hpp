@@ -6,6 +6,7 @@
 
 struct Divizion {
   DivEngine* e;
+  uint8_t instruments[16]{0};
 
   Divizion(DivEngine *e);
 };

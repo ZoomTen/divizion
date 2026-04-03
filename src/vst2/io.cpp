@@ -20,6 +20,5 @@ int32_t setupPresetLoadFromHost(Vst::AEffect *effect, void *source, size_t size,
   Divizion *di = (Divizion *)effect->object;
   if (!di) return 0;
 
-  di->e->loadFur((unsigned char *)source, size);
-  return 1;
+  return (int32_t)di->e->load((unsigned char *)source, size);
 }

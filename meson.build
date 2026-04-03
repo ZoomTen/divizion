@@ -85,7 +85,8 @@ gui_src = files(
   'src/text_input_widget.cpp',
   'src/mml.cpp',
   'src/waveEdit.cpp',
-  'src/gui_process_drags.cpp'
+  'src/gui_process_drags.cpp',
+  'src/file_dialog.cpp'
 )
 gui_src += [fontawesome_header, furicon_header]
 

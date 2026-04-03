@@ -1,57 +1,64 @@
 #include <cstdint>
+#include "src/engine/dispatch.h"
 #include "vst.hpp"
 #include "../divizion.hpp"
 #include "src/engine/engine.h"
 #include "src/ta-log.h"
 
-int32_t processEvents(Vst::AEffect *effect, Vst::VstEvents *e)
+int32_t processEvents(Vst::AEffect* effect, Vst::VstEvents* e)
 {
-  Divizion *di = (Divizion *)effect->object;
+  Divizion* di = (Divizion*)effect->object;
   if (!di) return 0;
   if (!di->e) return 0;
 
-  for (int32_t i = 0; i < e->numEvents; i++)
-  {
-    Vst::VstEvent *event = e->events[i];
+  for (int32_t i = 0; i < e->numEvents; i++) {
+    Vst::VstEvent* event = e->events[i];
     Vst::VstEventTypes etype = event->type;
-    
+
     // nothing but midi events
-    if (etype != Vst::kVstMidiType)
-    {
+    if (etype != Vst::kVstMidiType) {
       // logV("not a midi event: %s", (int)etype);
       continue;
-    }
-    else
-    {
+    } else {
       // logV("got midi event");
     }
 
-    Vst::VstMidiEvent *mevent = (Vst::VstMidiEvent *)event;
-    char *data = (char*)&mevent->midiData;
+    Vst::VstMidiEvent* mevent = (Vst::VstMidiEvent*)event;
+    char* data = (char*)&mevent->midiData;
 
     uint8_t status = data[0] & 0xff;
     uint8_t note = data[1] & 0xff;
     uint8_t velocity = data[2] & 0xff;
     // logV("status %02x note %02x vel %02x", status, note, velocity);
 
-    switch(status & 0xf0)
-    {
+    uint8_t chan = status & 0xf;
+    switch (status & 0xf0) {
     case 0x90:
-      if (note > 0)
-      {
+      if (note > 0) {
         // logV("sending note on");
-        di->e->noteOn(status & 0xf, 0, note-12,velocity);
-      }
-      else
-      {
+        di->e->noteOn(chan, di->instruments[chan], note - 12, velocity);
+      } else {
         // logV("sending note off");
-        di->e->noteOff(status & 0xf);
+        di->e->noteOff(chan);
       }
       break;
     case 0x80:
       // logV("sending note off");
-      di->e->noteOff(status & 0xf);
+      di->e->noteOff(chan);
       break;
+    case 0xE0: // pitch bend
+    {
+      uint16_t bend14bit = (data[2] << 7) | data[1];
+      int bendValue = (int)bend14bit - 8192;
+      di->e->dispatchCmd(DivCommand(DIV_CMD_PITCH, chan, bendValue));
+      break;
+    }
+    case 0xC0: // program change
+    {
+      unsigned char newinst = data[1];
+      di->instruments[chan] = newinst;
+      break;
+    }
     }
   }
   return 1;

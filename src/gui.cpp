@@ -11,6 +11,8 @@
 #include <cstdio>
 #include <unordered_map>
 
+#include "file_dialog.hpp"
+
 std::unordered_map<uint32_t, Gui*> Gui::windows;
 
 static void drawInsList(Gui* self);
@@ -108,9 +110,17 @@ void renderWindow(Gui* self)
                  | ImGuiWindowFlags_NoBringToFrontOnFocus);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
-      if (ImGui::MenuItem("Load instruments...")) { /* TODO */
+      if (ImGui::MenuItem("Load from project...")) {
+        std::string prjFile = getFileName(false);
+        if (prjFile != "") {
+          if (self->act) self->act->loadPrjFile(prjFile);
+        }
       }
-      if (ImGui::MenuItem("Save instruments...")) { /* TODO */
+      if (ImGui::MenuItem("Save to project...")) {
+        std::string prjFile = getFileName(true);
+        if (prjFile != "") {
+          if (self->act) self->act->savePrjFile(prjFile);
+        }
       }
       ImGui::EndMenu();
     }
@@ -301,6 +311,8 @@ void drawInsList(Gui* self)
         // displayInsTypeListMakeInsSample=-1;
       }
     }
+    // TODO
+#if 0
     ImGui::SameLine();
     { /* Button: Clone item */
       if (ImGui::Button(ICON_FA_FILES_O "##InsClone")) {
@@ -561,6 +573,7 @@ void drawInsList(Gui* self)
         ImGui::SetTooltip("Delete");
       }
     }
+#endif
   }
   ImGui::EndChild();
 }
