@@ -93,6 +93,7 @@ struct DivizionActionsImpl : DivizionActions {
   void panic() override;
   void loadPrjFile(std::string name) override;
   void savePrjFile(std::string name) override;
+  void drawRegView() override;
 };
 
 #define _GET(x, y) (y < 0) ? nullptr : (y < x.size()) ? x[y] : nullptr;

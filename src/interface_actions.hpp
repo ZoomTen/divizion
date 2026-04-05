@@ -45,6 +45,8 @@ struct DivizionActions {
 
   virtual void drawChipInfo() = 0;
   virtual void drawChanInfo() = 0;
+  virtual void drawRegView() = 0;
+
   virtual void loadPrjFile(std::string name) = 0;
   virtual void savePrjFile(std::string name) = 0;
 

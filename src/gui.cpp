@@ -149,6 +149,10 @@ void renderWindow(Gui* self)
       if (self->act) self->act->drawChanInfo();
       ImGui::EndTabItem();
     }
+    if (ImGui::BeginTabItem("Register View")) {
+      if (self->act) self->act->drawRegView();
+      ImGui::EndTabItem();
+    }
     ImGui::EndTabBar();
   }
   ImGui::EndChild();

@@ -54,7 +54,7 @@ DivEngine *newEngine(void)
 {
   DivEngine *e = new DivEngine();
   
-  e->curSubSong->hz = 6000.0;
+  e->curSubSong->hz = 60.0;
   e->setConf("lowLatency", 1);
   e->setAudio(DIV_AUDIO_DUMMY);
   e->setView(DIV_STATUS_NOTHING);
