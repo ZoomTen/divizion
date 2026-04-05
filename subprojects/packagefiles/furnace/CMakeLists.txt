@@ -16,15 +16,6 @@ set(CMAKE_PROJECT_VERSION_PATCH 8)
 include(CheckIncludeFile)
 include(TestBigEndian)
 
-execute_process(COMMAND git status RESULT_VARIABLE DONT_HAVE_GIT WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-if (NOT DONT_HAVE_GIT)
-  message(STATUS "Git is available")
-else()
-  message(WARNING "either Git is not available, or this Git repository has not been initialized.
-if you have used the \"Source code\" option in the GitHub release page, you are doing it wrong! unless you manually initialize submodules, the build is guaranteed to FAIL spectacularly!
-read the \"developer info\" section of README.md for more information.")
-endif()
-
 # option(USE_SNDFILE "Build with libsndfile. Required in order to work with audio files." OFF)
 # option(WITH_OGG "Whether to build with Ogg and Vorbis support." OFF)
 # option(WITH_MPEG "Whether to build with MPEG audio support (including MP3)." OFF)
@@ -51,11 +42,15 @@ find_package(Threads REQUIRED)
 list(APPEND DEPENDENCIES_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
 # xp support
-list(APPEND DEPENDENCIES_DEFINES "_WIN32_WINNT=0x0500")
-list(APPEND DEPENDENCIES_DEFINES "SUPPORT_XP")
-if (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(WITH_OUR_MALLOC ON CACHE BOOL "aaa" FORCE)
+if (WIN32)
+  list(APPEND DEPENDENCIES_DEFINES "_WIN32_WINNT=0x0500")
+  list(APPEND DEPENDENCIES_DEFINES "SUPPORT_XP")
+
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(WITH_OUR_MALLOC ON CACHE BOOL "aaa" FORCE)
+  endif()
 endif()
+
 set(BUILD_TESTS OFF CACHE BOOL "come on" FORCE)
 
 # fftw
@@ -135,34 +130,15 @@ list(APPEND DEPENDENCIES_INCLUDE_DIRS extern/zlib ${CMAKE_CURRENT_BINARY_DIR}/ex
 list(APPEND DEPENDENCIES_LIBRARIES zlibstatic)
 message(STATUS "Using vendored zlib")
 
-# I've already got SDL for the VST GUI.. do I need this?
-# set(SDL_SHARED OFF CACHE BOOL "Force no dynamically-linked SDL" FORCE)
-# set(SDL_STATIC ON CACHE BOOL "Force statically-linked SDL" FORCE)
-# set(SDL_PIPEWIRE OFF CACHE BOOL "Use Pipewire audio" FORCE)
-# set(SDL_LIBC ON CACHE BOOL "Tell SDL that we want it to use our C runtime (required for proper static linking)" FORCE)
-# set(SDL_RENDER_D3D OFF CACHE BOOL "Enable the Direct3D render driver" FORCE)
-# set(SDL_OPENGLES OFF CACHE BOOL "Enable OpenGL ES" FORCE)
-# add_subdirectory(extern/SDL EXCLUDE_FROM_ALL)
-# list(APPEND DEPENDENCIES_DEFINES HAVE_SDL2)
-# list(APPEND DEPENDENCIES_INCLUDE_DIRS extern/SDL/include)
-# list(APPEND DEPENDENCIES_LIBRARIES SDL2-static)
-# # Work around add_subdirectory'd SDL not propagating HAVE_LIBC to MSVC furnace build
-# if (MSVC)
-#   list(APPEND DEPENDENCIES_COMPILE_OPTIONS "/DHAVE_LIBC")
-# endif()
-# ist(APPEND DEPENDENCIES_LIBRARIES SDL2main)
-# message(STATUS "Using vendored SDL2")
-
 # audio engines
 set(AUDIO_SOURCES
   src/audio/abstract.cpp
   src/audio/midi.cpp
   src/audio/pipe.cpp
+  src/audio/rtmidi.cpp
 )
 
 # rtmidi
-list(APPEND AUDIO_SOURCES src/audio/rtmidi.cpp)
-message(STATUS "Building with RtMidi")
 list(APPEND DEPENDENCIES_DEFINES HAVE_RTMIDI)
 
 # this one has to be copied from the original CMakeLists file!!
@@ -508,113 +484,25 @@ src/engine/export/zsm.cpp
 
 src/engine/effect/abstract.cpp
 src/engine/effect/dummy.cpp
+
+src/utfutils.cpp
 )
 
 # if (USE_SNDFILE)
 #   list(APPEND ENGINE_SOURCES src/engine/sfWrapper.cpp)
 # endif()
 
-list(APPEND ENGINE_SOURCES src/utfutils.cpp)
-list(APPEND ENGINE_SOURCES src/engine/winStuff.cpp)
-
-set(GUI_SOURCES
-src/gui/plot_nolerp.cpp
-
-src/gui/render.cpp
-src/gui/render/abstract.cpp
-src/gui/render/renderSoftware.cpp
-
-src/gui/font_exo.cpp
-src/gui/font_liberationSans.cpp
-src/gui/font_mononoki.cpp
-src/gui/font_plexMono.cpp
-src/gui/font_plexSans.cpp
-src/gui/font_plexSansJP.cpp
-src/gui/font_plexSansKR.cpp
-src/gui/font_proggyClean.cpp
-src/gui/font_ptMono.cpp
-src/gui/font_unifont.cpp
-src/gui/font_icon.cpp
-src/gui/font_furicon.cpp
-src/gui/fonts.cpp
-src/gui/fontzlib.cpp
-
-src/gui/image_icon.cpp
-src/gui/image.cpp
-
-src/gui/debug.cpp
-src/gui/fileDialog.cpp
-
-src/gui/intConst.cpp
-src/gui/guiConst.cpp
-
-src/gui/about.cpp
-src/gui/channels.cpp
-src/gui/chanOsc.cpp
-src/gui/clock.cpp
-src/gui/compatFlags.cpp
-src/gui/csPlayer.cpp
-src/gui/cursor.cpp
-src/gui/dataList.cpp
-src/gui/debugWindow.cpp
-src/gui/doAction.cpp
-src/gui/editing.cpp
-src/gui/editControls.cpp
-src/gui/effectList.cpp
-src/gui/exportOptions.cpp
-src/gui/findReplace.cpp
-src/gui/fmPreview.cpp
-src/gui/gradient.cpp
-src/gui/grooves.cpp
-src/gui/insEdit.cpp
-src/gui/log.cpp
-src/gui/memory.cpp
-src/gui/mixer.cpp
-src/gui/midiMap.cpp
-src/gui/newSong.cpp
-src/gui/commandPalette.cpp
-src/gui/orders.cpp
-src/gui/osc.cpp
-src/gui/patManager.cpp
-src/gui/pattern.cpp
-src/gui/piano.cpp
-src/gui/presets.cpp
-src/gui/regView.cpp
-src/gui/sampleEdit.cpp
-src/gui/scaling.cpp
-src/gui/settings.cpp
-src/gui/songInfo.cpp
-src/gui/songNotes.cpp
-src/gui/speed.cpp
-src/gui/spoiler.cpp
-src/gui/stats.cpp
-src/gui/subSongs.cpp
-src/gui/sysConf.cpp
-src/gui/sysEx.cpp
-src/gui/sysManager.cpp
-src/gui/sysMiscInfo.cpp
-src/gui/sysPicker.cpp
-src/gui/tutorial.cpp
-src/gui/userPresets.cpp
-src/gui/util.cpp
-src/gui/waveEdit.cpp
-src/gui/volMeter.cpp
-src/gui/xyOsc.cpp
-src/gui/gui.cpp
-)
+if (WIN32)
+  list(APPEND ENGINE_SOURCES src/engine/winStuff.cpp)
+  list(APPEND DEPENDENCIES_LIBRARIES shlwapi)
+endif()
 
 list(APPEND DEPENDENCIES_DEFINES NO_INTRO)
 
-set(USED_SOURCES ${ENGINE_SOURCES} ${AUDIO_SOURCES} ${GUI_SOURCES})
+set(USED_SOURCES ${ENGINE_SOURCES} ${AUDIO_SOURCES})
 
-message(STATUS "Building headless")
-
-list(APPEND DEPENDENCIES_LIBRARIES shlwapi)
 if (NOT MSVC)
   list(APPEND DEPENDENCIES_LIBRARIES -static)
-endif()
-
-if (NOT MSVC)
   set(WARNING_FLAGS -Wall -Wextra -Wno-unused-parameter)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0)

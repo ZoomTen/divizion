@@ -1,0 +1,3 @@
+EXPORTS
+  main
+  main=WinMain@16

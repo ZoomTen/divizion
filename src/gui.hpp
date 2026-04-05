@@ -1,26 +1,39 @@
 #pragma once
 
-#include "vst.hpp"
-#include "SDL_events.h"
-#include "SDL_render.h"
+/* Main GUI class. */
+
 #include "SDL_video.h"
+#include "imgui.h"
+#include "src/interface_actions.hpp"
+#include <cstdint>
+#include <unordered_map>
 
-struct Gui
-{
-  Gui(Vst::AEffect *effect);
+struct Gui {
+  // methods
+  Gui(SDL_Window* w, DivizionActions* act);
   ~Gui();
+  void RenderGui(void);
 
-  bool open(void *p);
-  bool getRect(Vst::ERect **r);
-  void idle();
+  // intrinsic things
+  ImGuiContext* c{ nullptr };
+  SDL_Window* w{ nullptr };
+  DivizionActions* act{ nullptr };
 
-  void RenderGui();
-  bool init{false};
+  // dialogs
+  bool showAbout{ false };
+  bool showDebug{ false };
 
-  Vst::AEffect *effect;
+  // states
+  ActiveItemType currentlyViewingType{ INSTRUMENT };
+  ActiveItemType selectedType{ NONE };
+  int selectedIndex{ -1 };
+  int instSelected{ -1 };
+  int waveSelected{ -1 };
+  int sampSelected{ -1 };
+  int lastAssetType{ NONE };
+  bool channelsOpen{ false };
 
-  // SDL stuff
-  SDL_Event event{};
-  SDL_Window *window{nullptr};
-  SDL_Renderer *renderer{nullptr};
+  // window tracking
+  uint32_t wid;
+  static std::unordered_map<uint32_t, Gui*> windows;
 };
