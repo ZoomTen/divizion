@@ -26,7 +26,6 @@ intptr_t dispatcher(Vst::AEffect* effect, Vst::VstOpcodeToPlugin opcode,
     result = Vst::VstPlugCategory::kPlugCategSynth;
     break;
   case Vst::effClose:
-    delete di;
     break;
   case Vst::effCanDo:
     result = canDo((const char*)ptr);
