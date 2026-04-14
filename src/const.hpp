@@ -394,3 +394,15 @@ extern const char* macroLFOShapes[4];
 extern const int availableSystems[];
 extern const int* chipCategories[];
 extern const char* chipCategoryNames[];
+
+enum EffectColumn {
+  ESLOT_VIBRATO_SHAPE,
+  ESLOT_VIBRATO_INTENSITY,
+
+  ESLOT_MAX
+};
+#define PatternSlot(where, isvalue) 4 + (where*2) + (isvalue?1:0)
+
+const double sampleRate = 44100.0; // <- assumed!
+const double tickRate = 60.0;
+const int samplesPerTick = int(sampleRate/tickRate);

@@ -1,5 +1,7 @@
 #include "../divizion.hpp"
+#include "src/const.hpp"
 #include "src/engine/engine.h"
+#include "src/engine/song.h"
 #include "src/ta-log.h"
 #include "vst.hpp"
 #include <cstdio>
@@ -57,7 +59,7 @@ DivEngine *newEngine(void)
 {
   DivEngine *e = new DivEngine();
   
-  e->curSubSong->hz = 60.0;
+  e->curSubSong->hz = tickRate;
   e->setConf("lowLatency", 1);
   e->setAudio(DIV_AUDIO_DUMMY);
   e->setView(DIV_STATUS_NOTHING);
@@ -69,5 +71,17 @@ DivEngine *newEngine(void)
   else logI("init OK");
 
   e->createNew("id0=4", "Game Boy", false);
+
+  // run "song" to make effects work
+  e->song.subsong[0]->patLen=1;
+  e->song.subsong[0]->speeds.val[0]=1;
+  e->song.subsong[0]->virtualTempoN = 32767;
+  e->song.subsong[0]->virtualTempoD = 1;
+  DivPattern *p = e->song.subsong[0]->pat[0].getPattern(0, true);
+  e->song.subsong[0]->pat[0].effectCols = EffectColumn::ESLOT_MAX;
+  // vibrato shape = square
+  p->data[0][PatternSlot(EffectColumn::ESLOT_VIBRATO_SHAPE, false)]=0xe3;
+  p->data[0][PatternSlot(EffectColumn::ESLOT_VIBRATO_SHAPE, true)]=0x06;
+  e->play();
   return e;
 }
