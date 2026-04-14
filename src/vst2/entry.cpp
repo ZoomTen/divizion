@@ -20,13 +20,16 @@ extern "C"
   Vst::AEffect *VSTPluginMain(Vst::AudioMasterCallbackFunc masterCb)
   {
     Vst::AEffect *e = (Vst::AEffect*)(calloc(1, sizeof(Vst::AEffect)));
-
-    // if (!logger)
-    // {
-    //   logger = fopen("C:\\Divizion.log", "w");
-    //   initLog(logger);
-    // }
-    initLog(stdout);
+    
+#if 0
+    if (!logger)
+    {
+      logger = fopen("C:\\Divizion.log", "w");
+      initLog(logger);
+    }
+#else
+    initLog(stderr);
+#endif
     
     DivEngine *engine = newEngine(); // requires log to be init first
 
