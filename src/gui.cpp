@@ -73,6 +73,8 @@ Gui::Gui(SDL_Window* w, DivizionActions* act)
   io.Fonts->AddFontFromMemoryTTF(___src_icons_ttf, ___src_icons_ttf_len,
                                  12.0f * io.DisplayFramebufferScale.y, &config,
                                  fontRangeFurIcon);
+
+  this->isActive = true; // immediately mark GUI as ready
 }
 
 Gui::~Gui()
@@ -87,6 +89,8 @@ Gui::~Gui()
 
 void Gui::RenderGui()
 {
+  if (!this->isActive) return;
+
   ImGui::SetCurrentContext(this->c);
 
   ImGui_ImplSW_NewFrame();
@@ -111,13 +115,17 @@ void renderWindow(Gui* self)
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Load from project...")) {
+        self->isActive = false;
         std::string prjFile = getFileName(false);
+        self->isActive = true;
         if (prjFile != "") {
           if (self->act) self->act->loadPrjFile(prjFile);
         }
       }
       if (ImGui::MenuItem("Save to project...")) {
+        self->isActive = false;
         std::string prjFile = getFileName(true);
+        self->isActive = true;
         if (prjFile != "") {
           if (self->act) self->act->savePrjFile(prjFile);
         }

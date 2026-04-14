@@ -32,6 +32,7 @@ struct Gui {
   int sampSelected{ -1 };
   int lastAssetType{ NONE };
   bool channelsOpen{ false };
+  bool isActive{ false };
 
   // window tracking
   uint32_t wid;
