@@ -20,6 +20,14 @@ intptr_t dispatcher(Vst::AEffect* effect, Vst::VstOpcodeToPlugin opcode,
   Divizion* di = (Divizion*)effect->object;
   intptr_t result = 0;
   switch (opcode) {
+  case Vst::effOpen:
+    break;
+  case Vst::effGetPlugCategory: // vstmidi synth wants to verify this
+    result = Vst::VstPlugCategory::kPlugCategSynth;
+    break;
+  case Vst::effClose:
+    delete di;
+    break;
   case Vst::effCanDo:
     result = canDo((const char*)ptr);
     break;
@@ -32,10 +40,10 @@ intptr_t dispatcher(Vst::AEffect* effect, Vst::VstOpcodeToPlugin opcode,
   case Vst::effProcessEvents:
     result = processEvents(effect, (Vst::VstEvents*)ptr);
     break;
-  case Vst::effEditOpen:
+  case Vst::effEditOpen: // gui open
     handleOpen(di, ptr);
     break;
-  case Vst::effEditGetRect:
+  case Vst::effEditGetRect: // gui size
     if (di) {
       Vst::ERect** p = (Vst::ERect**)ptr;
       *p = &windowSize;
