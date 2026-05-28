@@ -71,22 +71,11 @@ divizion_src = files(
 
 gui_src = files(
   'src/const.cpp',
-  'src/furnace_widgets.cpp',
-  'src/furnace_gui_utils.cpp',
+  'src/file_dialog.cpp',
   'src/gui.cpp',
   'src/gui_render_list_item.cpp',
-  'src/gui_draw_macros.cpp',
   'src/impl_actions.cpp',
   'src/impl_actions_draw_chip_info.cpp',
-  # 'src/impl_actions_draw_chan_info.cpp',
-  'src/impl_actions_sys_categories.cpp',
-  'src/impl_actions_draw_instr_info.cpp',
-  'src/plot_nolerp.cpp',
-  'src/text_input_widget.cpp',
-  'src/mml.cpp',
-  'src/waveEdit.cpp',
-  'src/gui_process_drags.cpp',
-  'src/file_dialog.cpp',
   'src/regView.cpp',
 )
 gui_src += [fontawesome_header, furicon_header]

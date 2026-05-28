@@ -17,7 +17,6 @@ std::unordered_map<uint32_t, Gui*> Gui::windows;
 
 static void drawInsList(Gui* self);
 static void drawAboutWindow(bool* showFlag);
-static void drawInsMgmt(Gui* self);
 static void renderWindow(Gui* self);
 
 extern void renderListItem(Gui* self, size_t index, DivInstrument* item);
@@ -145,19 +144,19 @@ void renderWindow(Gui* self)
   }
   ImGui::BeginChild("Contents", ImVec2(0, 0));
   if (ImGui::BeginTabBar("AssetsTabBar")) {
-    if (ImGui::BeginTabItem("Instrument Management")) {
-      drawInsMgmt(self);
+    if (ImGui::BeginTabItem("Instruments")) {
+      drawInsList(self);
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Chip Management")) {
+    if (ImGui::BeginTabItem("Chips")) {
       if (self->act) self->act->drawChipInfo();
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Channel Mappings")) {
+    if (ImGui::BeginTabItem("Channel Map")) {
       if (self->act) self->act->drawChanInfo();
       ImGui::EndTabItem();
     }
-    if (ImGui::BeginTabItem("Register View")) {
+    if (ImGui::BeginTabItem("Registers")) {
       if (self->act) self->act->drawRegView();
       ImGui::EndTabItem();
     }
@@ -183,26 +182,6 @@ void renderWindow(Gui* self)
     }
 
   ImGui::End();
-}
-
-void drawInsMgmt(Gui* self)
-{
-  if (ImGui::BeginTable("Split", 2, ImGuiTableFlags_Resizable)) {
-    ImGui::TableSetupColumn("LeftPane", ImGuiTableColumnFlags_WidthStretch,
-                            0.25);
-    ImGui::TableSetupColumn("RightPane", ImGuiTableColumnFlags_WidthStretch,
-                            0.75);
-    ImGui::TableNextRow();
-    ImGui::TableSetColumnIndex(0);
-    drawInsList(self);
-
-    ImGui::TableSetColumnIndex(1);
-    ImGui::BeginChild("RightChild");
-    if (self->act)
-      self->act->drawInstrumentInfo(self->selectedType, self->selectedIndex);
-    ImGui::EndChild();
-    ImGui::EndTable();
-  }
 }
 
 void drawAboutWindow(bool* showFlag)
@@ -277,315 +256,5 @@ void drawInsList(Gui* self)
     ImGui::EndTabBar();
   }
   ImGui::EndChild();
-  ImGui::Separator();
-  { /* Toolbar */
-    int currentlySelectedOfViewingType;
-    switch (self->currentlyViewingType) {
-    case INSTRUMENT:
-      currentlySelectedOfViewingType = self->instSelected;
-      break;
-    case WAVETABLE:
-      currentlySelectedOfViewingType = self->waveSelected;
-      break;
-    case SAMPLE:
-      currentlySelectedOfViewingType = self->sampSelected;
-      break;
-    default:
-      break;
-    }
-    { /* Button: Add item */
-      if (ImGui::Button(ICON_FA_PLUS "##InsAdd")) {
-        // if (settings.unifiedDataView) {
-        switch (self->lastAssetType) {
-        case 0:
-          // doAction(GUI_ACTION_INS_LIST_ADD);
-          break;
-        case 1:
-          // doAction(GUI_ACTION_WAVE_LIST_ADD);
-          break;
-        case 2:
-          // doAction(GUI_ACTION_SAMPLE_LIST_ADD);
-          break;
-        }
-        // } else {
-        // doAction(GUI_ACTION_INS_LIST_ADD);
-        // }
-      }
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Add");
-      }
-      if (ImGui::IsItemClicked()) {
-        if (self->act) self->act->actAdd(self->currentlyViewingType);
-      }
-      if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-        // makeInsTypeList=e->getPossibleInsTypes();
-        // displayInsTypeList=true;
-        // displayInsTypeListMakeInsSample=-1;
-      }
-    }
-    // TODO
-#if 0
-    ImGui::SameLine();
-    { /* Button: Clone item */
-      if (ImGui::Button(ICON_FA_FILES_O "##InsClone")) {
-        // if (settings.unifiedDataView) {
-        switch (self->lastAssetType) {
-        case 0:
-          // doAction(GUI_ACTION_INS_LIST_DUPLICATE);
-          break;
-        case 1:
-          // doAction(GUI_ACTION_WAVE_LIST_DUPLICATE);
-          break;
-        case 2:
-          // doAction(GUI_ACTION_SAMPLE_LIST_DUPLICATE);
-          break;
-        }
-        // } else {
-        // doAction(GUI_ACTION_INS_LIST_DUPLICATE);
-        // }
-      }
-      if (ImGui::IsItemClicked()) {
-        if (self->act)
-          self->act->actDuplicate(self->currentlyViewingType,
-                                  currentlySelectedOfViewingType);
-      }
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Duplicate");
-      }
-    }
-    ImGui::SameLine();
-    { /* Button: Load item */
-      if (ImGui::Button(ICON_FA_FOLDER_OPEN "##InsLoad")) {
-        // if (settings.unifiedDataView) {
-        switch (self->lastAssetType) {
-        case 0:
-          // doAction(GUI_ACTION_INS_LIST_OPEN);
-          break;
-        case 1:
-          // doAction(GUI_ACTION_WAVE_LIST_OPEN);
-          break;
-        case 2:
-          // doAction(GUI_ACTION_SAMPLE_LIST_OPEN);
-          break;
-        }
-        // } else {
-        // doAction(GUI_ACTION_INS_LIST_OPEN);
-        // }
-      }
-      if (ImGui::IsItemClicked()) {
-        if (self->act) self->act->actLoad(self->currentlyViewingType);
-      }
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Open");
-      }
-    }
-    /*
-      if (ImGui::BeginPopupContextItem("InsOpenOpt"))
-      {
-          // if (settings.unifiedDataView) {
-          if (ImGui::MenuItem(_("replace instrument...")))
-          {
-              // doAction((curIns>=0 &&
-              //
-      curIns<(int)e->song.ins.size())?GUI_ACTION_INS_LIST_OPEN_REPLACE:GUI_ACTION_INS_LIST_OPEN);
-          }
-          if (ImGui::MenuItem(_("load instrument from TX81Z")))
-          {
-              // doAction(GUI_ACTION_TX81Z_REQUEST);
-          }
-
-          ImGui::Separator();
-
-          if (ImGui::MenuItem(_("replace wavetable...")))
-          {
-              // doAction((curWave>=0 &&
-              //
-      curWave<(int)e->song.wave.size())?GUI_ACTION_WAVE_LIST_OPEN_REPLACE:GUI_ACTION_WAVE_LIST_OPEN);
-          }
-
-          ImGui::Separator();
-
-          if (ImGui::MenuItem(_("replace sample...")))
-          {
-              // doAction((curSample>=0 &&
-              //
-      curSample<(int)e->song.sample.size())?GUI_ACTION_SAMPLE_LIST_OPEN_REPLACE:GUI_ACTION_SAMPLE_LIST_OPEN);
-          }
-          if (ImGui::MenuItem(_("import raw sample...")))
-          {
-              // doAction(GUI_ACTION_SAMPLE_LIST_OPEN_RAW);
-          }
-          if (ImGui::MenuItem(_("import raw sample (replace)...")))
-          {
-              // doAction((curSample>=0 &&
-              //
-      curSample<(int)e->song.sample.size())?GUI_ACTION_SAMPLE_LIST_OPEN_REPLACE_RAW:GUI_ACTION_SAMPLE_LIST_OPEN_RAW);
-          }
-          // } else {
-          //   if (ImGui::MenuItem(_("replace..."))) {
-          //     doAction((curIns>=0 &&
-          //
-      curIns<(int)e->song.ins.size())?GUI_ACTION_INS_LIST_OPEN_REPLACE:GUI_ACTION_INS_LIST_OPEN);
-          //   }
-          //   ImGui::Separator();
-          //   if (ImGui::MenuItem(_("load from TX81Z"))) {
-          //     doAction(GUI_ACTION_TX81Z_REQUEST);
-          //   }
-          // }
-          ImGui::EndPopup();
-      }
-      if (ImGui::IsItemHovered())
-      {
-          ImGui::SetTooltip(_("Open (insert; right-click to replace)"));
-      }
-      */
-    ImGui::SameLine();
-    { /* Button: save item */
-      if (ImGui::Button(ICON_FA_FLOPPY_O "##InsSave")) {
-        // if (settings.unifiedDataView) {
-        switch (self->lastAssetType) {
-        case 0:
-          // doAction(GUI_ACTION_INS_LIST_SAVE);
-          break;
-        case 1:
-          // doAction(GUI_ACTION_WAVE_LIST_SAVE);
-          break;
-        case 2:
-          // doAction(GUI_ACTION_SAMPLE_LIST_SAVE);
-          break;
-        }
-      }
-      if (ImGui::IsItemClicked()) {
-        if (self->act)
-          self->act->actSave(self->currentlyViewingType,
-                             currentlySelectedOfViewingType);
-      }
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Save");
-      }
-      if (ImGui::BeginPopupContextItem("InsSaveFormats",
-                                       ImGuiMouseButton_Right)) {
-        // if (settings.unifiedDataView) {
-        if (ImGui::MenuItem("save instrument as .dmp...")) {
-          // doAction(GUI_ACTION_INS_LIST_SAVE_DMP);
-        }
-
-        ImGui::Separator();
-
-        if (ImGui::MenuItem("save wavetable as .dmw...")) {
-          // doAction(GUI_ACTION_WAVE_LIST_SAVE_DMW);
-        }
-        if (ImGui::MenuItem("save raw wavetable...")) {
-          // doAction(GUI_ACTION_WAVE_LIST_SAVE_RAW);
-        }
-
-        ImGui::Separator();
-
-        if (ImGui::MenuItem("save raw sample...")) {
-          // doAction(GUI_ACTION_SAMPLE_LIST_SAVE_RAW);
-        }
-
-        ImGui::Separator();
-
-        if (ImGui::MenuItem("save all instruments...")) {
-          // doAction(GUI_ACTION_INS_LIST_SAVE_ALL);
-        }
-        if (ImGui::MenuItem("save all wavetables...")) {
-          // doAction(GUI_ACTION_WAVE_LIST_SAVE_ALL);
-        }
-        if (ImGui::MenuItem("save all samples...")) {
-          // doAction(GUI_ACTION_SAMPLE_LIST_SAVE_ALL);
-        }
-        ImGui::EndPopup();
-      }
-    }
-    ImGui::SameLine();
-    { /* Button: move item up the list */
-      if (ImGui::Button(ICON_FA_ARROW_UP "##InsUp")) {
-        switch (self->lastAssetType) {
-        case 0:
-          // doAction(GUI_ACTION_INS_LIST_MOVE_UP);
-          break;
-        case 1:
-          // doAction(GUI_ACTION_WAVE_LIST_MOVE_UP);
-          break;
-        case 2:
-          // doAction(GUI_ACTION_SAMPLE_LIST_MOVE_UP);
-          break;
-        }
-      }
-      if (ImGui::IsItemClicked()) {
-        if (self->act)
-          self->act->actMoveUp(self->currentlyViewingType,
-                               currentlySelectedOfViewingType);
-      }
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Move up");
-      }
-    }
-    ImGui::SameLine();
-    { /* Button: move item down the list */
-      if (ImGui::Button(ICON_FA_ARROW_DOWN "##InsDown")) {
-        switch (self->lastAssetType) {
-        case 0:
-          // doAction(GUI_ACTION_INS_LIST_MOVE_DOWN);
-          break;
-        case 1:
-          // doAction(GUI_ACTION_WAVE_LIST_MOVE_DOWN);
-          break;
-        case 2:
-          // doAction(GUI_ACTION_SAMPLE_LIST_MOVE_DOWN);
-          break;
-        }
-      }
-      if (ImGui::IsItemClicked()) {
-        if (self->act)
-          self->act->actMoveDown(self->currentlyViewingType,
-                                 currentlySelectedOfViewingType);
-      }
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Move down");
-      }
-      if (self->lastAssetType == 2) {
-        ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_VOLUME_UP "##PreviewSampleL")) {
-          // doAction(GUI_ACTION_SAMPLE_LIST_PREVIEW);
-        }
-        if (ImGui::IsItemHovered()) {
-          ImGui::SetTooltip("Preview (right click to stop)");
-        }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-          // doAction(GUI_ACTION_SAMPLE_LIST_STOP_PREVIEW);
-        }
-      }
-    }
-    ImGui::SameLine();
-    { /* Button: delete item */
-      // pushDestColor();
-      if (ImGui::Button(ICON_FA_TIMES "##InsDelete")) {
-        switch (self->lastAssetType) {
-        case 0:
-          // doAction(GUI_ACTION_INS_LIST_DELETE);
-          break;
-        case 1:
-          // doAction(GUI_ACTION_WAVE_LIST_DELETE);
-          break;
-        case 2:
-          // doAction(GUI_ACTION_SAMPLE_LIST_DELETE);
-          break;
-        }
-      }
-      if (ImGui::IsItemClicked()) {
-        if (self->act)
-          self->act->actDelete(self->currentlyViewingType,
-                               currentlySelectedOfViewingType);
-      }
-      // popDestColor();
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Delete");
-      }
-    }
-#endif
-  }
   ImGui::EndChild();
 }

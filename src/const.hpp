@@ -1,30 +1,6 @@
 #pragma once
 #include "imgui.h"
-#include "src/engine/instrument.h"
-extern const int _ZERO;
-extern const int _ONE;
-extern const int _THREE;
-extern const int _FOUR;
-extern const int _SEVEN;
-extern const int _EIGHT;
-extern const int _TEN;
-extern const int _FIFTEEN;
-extern const int _SIXTEEN;
-extern const int _TWENTY_FOUR;
-extern const int _THIRTY_ONE;
-extern const int _SIXTY_FOUR;
-extern const int _ONE_HUNDRED;
-extern const int _ONE_HUNDRED_TWENTY_SEVEN;
-extern const int _ONE_HUNDRED_SEVENTY_NINE;
-extern const int _TWO_HUNDRED_FIFTY_FIVE;
-extern const int _FIVE_HUNDRED_ELEVEN;
-extern const int _TWO_THOUSAND_FORTY_SEVEN;
-extern const int _FOUR_THOUSAND_NINETY_FIVE;
-extern const int _SIXTY_FIVE_THOUSAND_FIVE_HUNDRED_THIRTY_FIVE;
-extern const int _MINUS_TWENTY_FOUR;
-extern const int _MINUS_ONE_HUNDRED_TWENTY_SEVEN;
-extern const int _MINUS_ONE_HUNDRED_TWENTY_EIGHT;
-extern const char* insTypes[DIV_INS_MAX + 1][3];
+
 enum FurnaceGUIColors {
   GUI_COLOR_BACKGROUND = 0,
   GUI_COLOR_FRAME_BACKGROUND,
@@ -389,11 +365,6 @@ enum FurnaceGUIColors {
 };
 
 extern const ImVec4 uiColors[GUI_COLOR_MAX];
-extern const char* noteNames[180];
-extern const char* macroLFOShapes[4];
-extern const int availableSystems[];
-extern const int* chipCategories[];
-extern const char* chipCategoryNames[];
 
 enum EffectColumn {
   ESLOT_VIBRATO_SHAPE,
