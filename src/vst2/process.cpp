@@ -30,7 +30,16 @@ int32_t processEvents(Vst::AEffect* effect, Vst::VstEvents* e)
     }
 
     Vst::VstMidiEvent* mevent = (Vst::VstMidiEvent*)event;
-    char* data = (char*)&mevent->midiData;
+    unsigned char* data = (unsigned char*)&mevent->midiData;
+
+    #if 0
+    logI("got midi event. %02x %02x %02x", data[0], data[1], data[2]);
+    if (data[0] == 0xff)
+    {
+      logI("got meta event. type=%02x len=%02x", data[1], data[2]);
+      return 1;
+    }
+    #endif
 
     uint8_t status = data[0] & 0xff;
     uint8_t note = data[1] & 0xff;

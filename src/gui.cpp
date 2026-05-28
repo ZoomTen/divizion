@@ -215,10 +215,17 @@ void drawInsList(Gui* self)
       if (self->act) {
         ImGui::BeginChild("Instr list");
         auto list = self->act->getInstrumentList();
-        for (size_t i = 0; i < list.size(); i++) {
-          ImGui::PushID(i);
-          renderListItem(self, i, list[i]);
-          ImGui::PopID();
+        if (list.size() < 1)
+        {
+          ImGui::Text("no instruments, go to File -> Load from project to load some");
+        }
+        else
+        {
+          for (size_t i = 0; i < list.size(); i++) {
+            ImGui::PushID(i);
+            renderListItem(self, i, list[i]);
+            ImGui::PopID();
+          }
         }
         ImGui::EndChild();
       } else ImGui::Text("getInstrumentList missing");
@@ -230,10 +237,17 @@ void drawInsList(Gui* self)
       if (self->act) {
         ImGui::BeginChild("Instr list");
         auto list = self->act->getWavetables();
-        for (size_t i = 0; i < list.size(); i++) {
-          ImGui::PushID(i);
-          renderListItem(self, i, list[i]);
-          ImGui::PopID();
+        if (list.size() < 1)
+        {
+          ImGui::Text("no wavetables");
+        }
+        else
+        {
+          for (size_t i = 0; i < list.size(); i++) {
+            ImGui::PushID(i);
+            renderListItem(self, i, list[i]);
+            ImGui::PopID();
+          }
         }
         ImGui::EndChild();
       } else ImGui::Text("getWavetables missing");
@@ -244,10 +258,17 @@ void drawInsList(Gui* self)
       if (self->act) {
         ImGui::BeginChild("Instr list");
         auto list = self->act->getSamples();
-        for (size_t i = 0; i < list.size(); i++) {
-          ImGui::PushID(i);
-          renderListItem(self, i, list[i]);
-          ImGui::PopID();
+        if (list.size() < 1)
+        {
+          ImGui::Text("no samples");
+        }
+        else
+        {
+          for (size_t i = 0; i < list.size(); i++) {
+            ImGui::PushID(i);
+            renderListItem(self, i, list[i]);
+            ImGui::PopID();
+          }
         }
         ImGui::EndChild();
       } else ImGui::Text("getWavetables missing");
